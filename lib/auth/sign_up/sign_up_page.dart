@@ -146,8 +146,8 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _createAccount() async {
-    String? s = await FirebaseService()
-        .createEmailAccount(SignUp.email.text, SignUp.password.text);
+    String? s = await FirebaseService().createEmailAccount(SignUp.email.text,
+        SignUp.password.text, SignUp.fName.text, SignUp.lName.text);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

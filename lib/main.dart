@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/auth/login_page.dart';
+import 'package:team_hive/home_page.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:team_hive/service/firebase.dart';
@@ -35,7 +36,8 @@ class App extends StatelessWidget {
           textSelectionTheme: TextSelectionThemeData(
         selectionColor: Color.lerp(Style.back, Style.main, 0.5),
       )),
-      home: const LoginPage(),
+      home:
+          FirebaseService().user == null ? const LoginPage() : const HomePage(),
     );
   }
 }

@@ -5,6 +5,7 @@ class Style {
   static late Color _back;
   static late Color _main;
   static late Color _sec;
+  static late Color _section;
   static late TextStyle _headingStyle;
   static late TextStyle _miniTextStyle;
   static late OutlineInputBorder _outBorder;
@@ -17,6 +18,7 @@ class Style {
     _back = _isLight ? Colors.white : const Color.fromARGB(255, 35, 35, 35);
     _main = _isLight ? const Color.fromARGB(255, 0, 0, 0) : Colors.white;
     _sec = Colors.blue;
+    _section = const Color(0xFFF3F4F6);
     _headingStyle =
         TextStyle(color: _main, fontSize: 22, fontWeight: FontWeight.bold);
     _miniTextStyle = const TextStyle(
@@ -59,6 +61,7 @@ class Style {
   static Color get back => _back;
   static Color get main => _main;
   static Color get sec => _sec;
+  static Color get section => _section;
   static TextStyle get headingStyle => _headingStyle;
   static TextStyle get miniTextStyle => _miniTextStyle;
   static TextStyle get textStyle => _textStyle;

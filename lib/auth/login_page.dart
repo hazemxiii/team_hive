@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:team_hive/auth/sign_up/sign_up_page.dart';
+import 'package:team_hive/home_page.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/firebase.dart';
 
@@ -221,12 +223,18 @@ class _FormWidgetState extends State<FormWidget> {
   }
 
   Future<void> _login() async {
-    String? s = await FirebaseService()
-        .emailSignIn(_emailController.text, _passController.text);
+    final f = context.read<FirebaseService>();
+    String? s =
+        await f.emailSignIn(_emailController.text, _passController.text);
 
-    if (FirebaseService().user == null && mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(s ?? "Unkown Error")));
+    if (mounted) {
+      if (FirebaseService().user == null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(s ?? "Unkown Error")));
+      } else {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomePage()));
+      }
     }
   }
 
