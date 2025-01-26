@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "203270850968",
+    "project_id": "teamhive-ab0aa",
+    "storage_bucket": "teamhive-ab0aa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203270850968:android:0fda8918f74bceb4f783ed",
+        "android_client_info": {
+          "package_name": "com.example.team_hive"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiCOb0ICrUZkDJqEupIBs-zVwhVeyXZtk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
