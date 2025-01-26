@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:team_hive/auth/sign_up/sign_up_page.dart';
 import 'package:team_hive/service/app_colors.dart';
+import 'package:team_hive/service/firebase.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -129,32 +130,37 @@ class FormWidget extends StatefulWidget {
 }
 
 class _FormWidgetState extends State<FormWidget> {
+  final _key = GlobalKey<FormState>();
   bool _isHidden = true;
+  final _emailController = TextEditingController();
+  final _passController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Form(
+        key: _key,
         child: Column(
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        _emailInput(),
-        const SizedBox(
-          height: 10,
-        ),
-        _passwordInput(),
-        const SizedBox(
-          height: 10,
-        ),
-        _signInBtn(),
-        const SizedBox(
-          height: 20,
-        ),
-        _forgotPasswordBtn()
-      ],
-    ));
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            _emailInput(),
+            const SizedBox(
+              height: 10,
+            ),
+            _passwordInput(),
+            const SizedBox(
+              height: 10,
+            ),
+            _signInBtn(),
+            const SizedBox(
+              height: 20,
+            ),
+            _forgotPasswordBtn()
+          ],
+        ));
   }
 
   Widget _emailInput() {
     return TextFormField(
+      controller: _emailController,
       cursorColor: Style.main,
       style: Style.textStyle,
       decoration:
@@ -164,6 +170,7 @@ class _FormWidgetState extends State<FormWidget> {
 
   Widget _passwordInput() {
     return TextFormField(
+      controller: _passController,
       obscureText: _isHidden,
       cursorColor: Style.main,
       style: Style.textStyle,
@@ -213,7 +220,15 @@ class _FormWidgetState extends State<FormWidget> {
     });
   }
 
-  void _login() {}
+  Future<void> _login() async {
+    String? s = await FirebaseService()
+        .emailSignIn(_emailController.text, _passController.text);
+
+    if (FirebaseService().user == null && mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(s ?? "Unkown Error")));
+    }
+  }
 
   void _forgotPassword() {}
 }

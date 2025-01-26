@@ -10,6 +10,15 @@ class SignUp {
 
   static List<GlobalKey<FormState>> formKeys = [GlobalKey(), GlobalKey()];
 
+  static void clear() {
+    email = TextEditingController();
+    password = TextEditingController();
+    confirmPassword = TextEditingController();
+    fName = TextEditingController();
+    lName = TextEditingController();
+    image = null;
+  }
+
   static bool _isValidEmail(String? email) {
     final emailRegex = RegExp(
       r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",

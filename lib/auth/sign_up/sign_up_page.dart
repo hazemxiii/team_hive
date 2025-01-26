@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:team_hive/auth/sign_up/pages.dart';
 import 'package:team_hive/models/sign_up.dart';
 import 'package:team_hive/service/app_colors.dart';
+import 'package:team_hive/service/firebase.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -144,5 +145,17 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() {});
   }
 
-  void _createAccount() {}
+  void _createAccount() async {
+    String? s = await FirebaseService()
+        .createEmailAccount(SignUp.email.text, SignUp.password.text);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(s ?? "Account Created Successfully")));
+      if (s == null) {
+        SignUp.clear();
+        Navigator.of(context).pop();
+      }
+    }
+  }
 }

@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:team_hive/auth/login_page.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:team_hive/service/firebase.dart';
 import 'firebase_options.dart';
 /*
 https://www.figma.com/design/d4NRtX6iZtgDvjEW7tHr57/TeamHive?node-id=0-1&t=3OKBjxRjyCIDgUuK-1
 */
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   Style.initColors();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const App());
+  runApp(MultiProvider(
+    providers: [
+      Provider(
+        create: (context) => FirebaseService(),
+      )
+    ],
+    child: const App(),
+  ));
 }
 
 class App extends StatelessWidget {
