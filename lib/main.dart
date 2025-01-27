@@ -31,13 +31,23 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final firebase = context.read<FirebaseService>();
     return MaterialApp(
       theme: ThemeData(
           textSelectionTheme: TextSelectionThemeData(
         selectionColor: Color.lerp(Style.back, Style.main, 0.5),
       )),
-      home:
-          FirebaseService().user == null ? const LoginPage() : const HomePage(),
+      home: !firebase.isLogged
+          ? const LoginPage()
+          : FutureBuilder(
+              future: firebase.getUserData(),
+              builder: (_, snap) {
+                if (snap.connectionState != ConnectionState.done) {
+                  return const SizedBox();
+                } else {
+                  return const HomePage();
+                }
+              }),
     );
   }
 }

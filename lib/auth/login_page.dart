@@ -228,7 +228,7 @@ class _FormWidgetState extends State<FormWidget> {
         await f.emailSignIn(_emailController.text, _passController.text);
 
     if (mounted) {
-      if (FirebaseService().user == null) {
+      if (!f.isLogged) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(s ?? "Unkown Error")));
       } else {
