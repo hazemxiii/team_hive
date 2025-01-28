@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:team_hive/models/team.dart';
 import 'package:team_hive/models/user.dart';
 
 class FirebaseService {
@@ -18,7 +19,15 @@ class FirebaseService {
           uid: _user!.uid,
           email: _user!.email ?? "",
           fName: d.get("fName") ?? "",
-          lName: d.get("lName") ?? "");
+          lName: d.get("lName") ?? "",
+          teams: [
+            Team(
+                id: "1",
+                name: "name",
+                color: Colors.red,
+                owner: MyUser(
+                    email: "email", fName: "fName", lName: "lName", teams: []))
+          ]);
     } catch (e) {
       debugPrint("Error getting user data: $e");
     }
@@ -63,6 +72,26 @@ class FirebaseService {
   void signOut() {
     _auth.signOut();
   }
+
+  Future<bool> createTeam(String teamName) async {
+    try {
+      _firestore.runTransaction((transaction) async {
+        DocumentReference teamDoc = _firestore.collection("teams").doc();
+        DocumentReference ownerDoc = _firestore.doc("users/${user.uid}");
+        transaction.set(teamDoc, {"name": teamName, "owner": user.uid});
+        transaction.update(ownerDoc, {
+          "teams": [..._currentUser.teams.map((e) => e.id), teamDoc.id]
+        });
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+// TODO: get users teams
+  // Future<List<Team>> getTeams() async {
+  //   Team;
+  // }
 
   MyUser get user => _currentUser;
   bool get isLogged => _user != null;
