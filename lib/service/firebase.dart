@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/models/user.dart';
+import 'package:team_hive/service/app_colors.dart';
 
 class FirebaseService {
   final _auth = FirebaseAuth.instance;
@@ -20,14 +21,7 @@ class FirebaseService {
           email: _user!.email ?? "",
           fName: d.get("fName") ?? "",
           lName: d.get("lName") ?? "",
-          teams: [
-            Team(
-                id: "1",
-                name: "name",
-                color: Colors.red,
-                owner: MyUser(
-                    email: "email", fName: "fName", lName: "lName", teams: []))
-          ]);
+          teams: await getTeams());
     } catch (e) {
       debugPrint("Error getting user data: $e");
     }
@@ -75,7 +69,7 @@ class FirebaseService {
 
   Future<bool> createTeam(String teamName) async {
     try {
-      _firestore.runTransaction((transaction) async {
+      await _firestore.runTransaction((transaction) async {
         DocumentReference teamDoc = _firestore.collection("teams").doc();
         DocumentReference ownerDoc = _firestore.doc("users/${user.uid}");
         transaction.set(teamDoc, {"name": teamName, "owner": user.uid});
@@ -88,10 +82,70 @@ class FirebaseService {
       return false;
     }
   }
-// TODO: get users teams
-  // Future<List<Team>> getTeams() async {
-  //   Team;
-  // }
+
+  Future<void> joinTeam(String teamCode) async {
+    DocumentReference userRef = _firestore.doc("users/${user.uid}");
+    DocumentSnapshot userDoc = await userRef.get();
+    List<String> teamsIds = [];
+    try {
+      teamsIds = userDoc.get("teams");
+    } catch (e) {
+      debugPrint("Error getting teams: ${e.toString()}");
+    }
+    teamsIds.add(teamCode);
+    await userRef.update({"teams": teamsIds});
+  }
+
+  Future<List<Team>> getTeams() async {
+    List<Team> teams = [];
+    List<dynamic> teamsId = [];
+    try {
+      DocumentSnapshot<Map<String, dynamic>> userDoc =
+          await _firestore.doc("users/${_user!.uid}").get();
+      if (userDoc.exists) {
+        teamsId = userDoc.get("teams") ?? [];
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    for (String id in teamsId) {
+      teams.add(await _getTeamById(id));
+    }
+    return teams;
+  }
+
+  Future<Team> _getTeamById(String id) async {
+    Map<String, dynamic> team = {};
+    DocumentSnapshot<Map<String, dynamic>> teamDoc =
+        await _firestore.doc("teams/$id").get();
+    if (teamDoc.exists) {
+      team = teamDoc.data() ?? {};
+    }
+
+    return Team(
+        name: team['name'] ?? "",
+        color: Color(team['color'] ?? Style.sec.value),
+        owner: await _getOwner(team['owner'] ?? ""),
+        id: id);
+  }
+
+  Future<MyUser> _getOwner(String id) async {
+    Map<String, dynamic> owner = {};
+    try {
+      DocumentSnapshot<Map<String, dynamic>> ownerDoc =
+          await _firestore.doc("users/$id").get();
+      if (ownerDoc.exists) {
+        owner = ownerDoc.data() ?? {};
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    return MyUser(
+        email: owner['name'] ?? "",
+        fName: owner['fName'] ?? "",
+        lName: owner['lName'] ?? "",
+        teams: []);
+  }
 
   MyUser get user => _currentUser;
   bool get isLogged => _user != null;

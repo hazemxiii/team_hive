@@ -16,11 +16,11 @@ class TeamsPage extends StatefulWidget {
 class _TeamsPageState extends State<TeamsPage> {
   late final FirebaseService _firebase;
   List<Team> teams = [];
+  final _teamsLoadingNotifier = ValueNotifier(false);
 
   @override
   initState() {
     _firebase = context.read();
-    teams = _firebase.user.teams;
     super.initState();
   }
 
@@ -43,7 +43,12 @@ class _TeamsPageState extends State<TeamsPage> {
                 _toggleGridBtn()
               ],
             ),
-            _isGrid ? _gridView() : _rowView()
+            ValueListenableBuilder(
+                valueListenable: _teamsLoadingNotifier,
+                builder: (_, v, child) {
+                  teams = _firebase.user.teams;
+                  return _isGrid ? _gridView() : _rowView();
+                })
           ],
         ),
       ),
@@ -90,6 +95,7 @@ class _TeamsPageState extends State<TeamsPage> {
             ...List.generate(
                 teams.length,
                 (index) => _cardContainer(Text(
+                      textAlign: TextAlign.center,
                       teams[index].name,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 20),
@@ -102,6 +108,7 @@ class _TeamsPageState extends State<TeamsPage> {
 
   Widget _cardContainer(Widget child) {
     return Container(
+        padding: const EdgeInsets.all(8),
         alignment: Alignment.center,
         decoration: BoxDecoration(
             color: Style.section,
@@ -143,8 +150,7 @@ class _TeamsPageState extends State<TeamsPage> {
                         Container(
                           width: 3,
                           height: 20,
-                          color: Color(Random().nextInt(Colors.white.value) +
-                              Colors.black.value),
+                          color: teams[i].color,
                         ),
                         const SizedBox(
                           width: 5,
@@ -184,12 +190,17 @@ class _TeamsPageState extends State<TeamsPage> {
   }
 
   void _showTeamDialog() {
-    showDialog(context: context, builder: (_) => const TeamDialog());
+    showDialog(
+        context: context,
+        builder: (_) => TeamDialog(
+              teamsNotifier: _teamsLoadingNotifier,
+            ));
   }
 }
 
 class TeamDialog extends StatefulWidget {
-  const TeamDialog({super.key});
+  final ValueNotifier teamsNotifier;
+  const TeamDialog({super.key, required this.teamsNotifier});
 
   @override
   State<TeamDialog> createState() => _TeamDialogState();
@@ -306,17 +317,31 @@ class _TeamDialogState extends State<TeamDialog> {
         OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
     return Form(
       key: key,
-      child: TextFormField(
-        cursorColor: Style.sec,
-        style: TextStyle(color: Style.sec),
-        validator: validator,
-        decoration: InputDecoration(
-            enabledBorder: border,
-            focusedBorder: borderF,
-            errorBorder: borderE,
-            focusedErrorBorder: borderE),
-        controller: controller,
-      ),
+      child: ValueListenableBuilder(
+          valueListenable: widget.teamsNotifier,
+          builder: (context, v, _) {
+            return TextFormField(
+              cursorColor: Style.sec,
+              style: TextStyle(color: Style.sec),
+              validator: validator,
+              decoration: InputDecoration(
+                  suffixIconConstraints:
+                      const BoxConstraints(maxWidth: 50, maxHeight: 30),
+                  suffixIcon: v
+                      ? Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10),
+                          child: CircularProgressIndicator(
+                            color: Style.sec,
+                          ),
+                        )
+                      : null,
+                  enabledBorder: border,
+                  focusedBorder: borderF,
+                  errorBorder: borderE,
+                  focusedErrorBorder: borderE),
+              controller: controller,
+            );
+          }),
     );
   }
 
@@ -327,7 +352,7 @@ class _TeamDialogState extends State<TeamDialog> {
       height: 40,
       minWidth: 120,
       color: Style.sec,
-      onPressed: isJoin ? () => _joinTeam : _createTeam,
+      onPressed: isJoin ? _joinTeam : _createTeam,
       child: Text(
         isJoin ? "Join" : "Create",
         style: TextStyle(color: Style.back),
@@ -352,11 +377,28 @@ class _TeamDialogState extends State<TeamDialog> {
 
   void _createTeam() async {
     if (_createFormKey.currentState!.validate()) {
-      if (await _firebase.createTeam(_createController.text)) {}
+      widget.teamsNotifier.value = true;
+      if (await _firebase.createTeam(_createController.text)) {
+        List<Team> teams = await _firebase.getTeams();
+        _firebase.user.setTeams(teams);
+        widget.teamsNotifier.value = false;
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
     }
   }
 
-  void _joinTeam() {
-    if (_joinFormKey.currentState!.validate()) {}
+  void _joinTeam() async {
+    if (_joinFormKey.currentState!.validate()) {
+      widget.teamsNotifier.value = true;
+      await _firebase.joinTeam(_joinController.text);
+      List<Team> teams = await _firebase.getTeams();
+      _firebase.user.setTeams(teams);
+      widget.teamsNotifier.value = false;
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
   }
 }
