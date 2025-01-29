@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:team_hive/coming_soon.dart';
 import 'package:team_hive/nav_bars.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/teams_page.dart';
@@ -21,10 +22,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _pages = const [
-    Text("profile"),
+    ComingSoonPage(title: "Profile"),
     TeamsPage(),
-    Text("tasks"),
-    Text("settings")
+    ComingSoonPage(title: "Tasks"),
+    ComingSoonPage(title: "Settings")
   ];
   @override
   void initState() {

@@ -1,10 +1,10 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/team_page/team_page.dart';
 
 class TeamsPage extends StatefulWidget {
   const TeamsPage({super.key});
@@ -94,12 +94,15 @@ class _TeamsPageState extends State<TeamsPage> {
             ),
             ...List.generate(
                 teams.length,
-                (index) => _cardContainer(Text(
-                      textAlign: TextAlign.center,
-                      teams[index].name,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 20),
-                    )))
+                (index) => InkWell(
+                      onTap: () => _goToTeam(teams[index]),
+                      child: _cardContainer(Text(
+                        textAlign: TextAlign.center,
+                        teams[index].name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20),
+                      )),
+                    ))
           ],
         ),
       ),
@@ -195,6 +198,13 @@ class _TeamsPageState extends State<TeamsPage> {
         builder: (_) => TeamDialog(
               teamsNotifier: _teamsLoadingNotifier,
             ));
+  }
+
+  void _goToTeam(Team team) {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => TeamPage(
+              team: team,
+            )));
   }
 }
 
