@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/coming_soon.dart';
-import 'package:team_hive/models/question/question.dart';
-import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/firebase.dart';
@@ -19,21 +17,14 @@ class TeamPage extends StatefulWidget {
 class _TeamPageState extends State<TeamPage> {
   late final FirebaseService _firebase;
   late Map<String, List<IconData>> _icons;
-  final List<Widget> _pages = [
-    const ComingSoonPage(title: "Announcements"),
-    const ComingSoonPage(title: "Chat"),
-    QuizzesPage(quizzes: [
-      Quiz(name: "Name", grade: 7.5, questions: [Question(text: "H", mark: 15)])
-    ]),
-    const ComingSoonPage(title: "Tasks"),
-    const ComingSoonPage(title: "Settings")
-  ];
+  late List<Widget> _pages;
   int _activePageI = 2;
 
   @override
   void initState() {
     _firebase = context.read<FirebaseService>();
     _icons = _drawerIcons();
+    _pages = _pagesBuilder();
     super.initState();
   }
 
@@ -106,5 +97,27 @@ class _TeamPageState extends State<TeamPage> {
       if (_firebase.user.email == widget.team.owner.email)
         "Settings": [Icons.settings_outlined, Icons.settings]
     };
+  }
+
+  List<Widget> _pagesBuilder() {
+    return [
+      const ComingSoonPage(
+        title: "Announcements",
+        isFullPage: true,
+      ),
+      const ComingSoonPage(
+        title: "Chat",
+        isFullPage: true,
+      ),
+      QuizzesPage(team: widget.team),
+      const ComingSoonPage(
+        title: "Tasks",
+        isFullPage: true,
+      ),
+      const ComingSoonPage(
+        title: "Settings",
+        isFullPage: true,
+      )
+    ];
   }
 }

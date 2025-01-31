@@ -22,10 +22,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _pages = const [
-    ComingSoonPage(title: "Profile"),
+    ComingSoonPage(
+      title: "Profile",
+      isFullPage: false,
+    ),
     TeamsPage(),
-    ComingSoonPage(title: "Tasks"),
-    ComingSoonPage(title: "Settings")
+    ComingSoonPage(
+      title: "Tasks",
+      isFullPage: false,
+    ),
+    ComingSoonPage(
+      title: "Settings",
+      isFullPage: false,
+    )
   ];
   @override
   void initState() {

@@ -20,6 +20,10 @@ class Quiz {
     _questions = questions;
   }
 
+  void setName(String v) {
+    _name = v;
+  }
+
   double totalGrade() {
     double sum = 0;
     for (Question q in _questions) {
@@ -62,4 +66,5 @@ class Quiz {
   double? get grade => _grade;
   DateTime? get startDate => _startDate;
   DateTime? get deadline => _deadline;
+  List<Question> get questions => _questions;
 }

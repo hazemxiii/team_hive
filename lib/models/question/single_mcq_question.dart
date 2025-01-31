@@ -2,19 +2,24 @@ import 'package:team_hive/models/question/mcq_question.dart';
 
 class SingleMcqQuestion implements McqQuestion {
   @override
-  List<String> choices;
+  List<String> choices = [];
 
   @override
   String text;
 
-  String choice;
+  String? correctAnswer;
+
+  String? answer;
 
   @override
   double mark;
 
   SingleMcqQuestion(
       {this.text = "",
-      this.choice = "",
-      this.choices = const [""],
-      this.mark = 1});
+      this.answer,
+      List<String> choices = const [""],
+      this.mark = 1,
+      this.correctAnswer}) {
+    this.choices.addAll(choices);
+  }
 }

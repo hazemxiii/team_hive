@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/firebase.dart';
@@ -200,7 +201,8 @@ class _TeamsPageState extends State<TeamsPage> {
             ));
   }
 
-  void _goToTeam(Team team) {
+  void _goToTeam(Team team) async {
+    team.updateQuizzes([Quiz(name: "Quiz 1"), Quiz(name: "name")], false);
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => TeamPage(
               team: team,

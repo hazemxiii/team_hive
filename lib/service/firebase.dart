@@ -141,7 +141,9 @@ class FirebaseService {
       debugPrint(e.toString());
     }
     return MyUser(
-        email: owner['name'] ?? "",
+        // TODO: delete this acccount
+        uid: id,
+        email: owner['email'] ?? "t@t.com",
         fName: owner['fName'] ?? "",
         lName: owner['lName'] ?? "",
         teams: []);

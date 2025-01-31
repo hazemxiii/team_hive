@@ -1,4 +1,4 @@
-class Question {
+interface class Question {
   double mark;
   String text;
 

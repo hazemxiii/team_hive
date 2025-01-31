@@ -9,12 +9,17 @@ class MultiMcqQuestion implements McqQuestion {
 
   List<String> correctChoices = [];
 
+  List<String> answer = [];
   @override
   double mark = 0;
 
-  MultiMcqQuestion(
-      {this.text = "",
-      this.correctChoices = const [""],
-      this.choices = const [""],
-      this.mark = 1});
+  MultiMcqQuestion({
+    this.text = "",
+    List<String> correctChoices = const [""],
+    List<String> choices = const [""],
+    this.mark = 1,
+  }) {
+    this.correctChoices.addAll(correctChoices);
+    this.choices.addAll(choices);
+  }
 }
