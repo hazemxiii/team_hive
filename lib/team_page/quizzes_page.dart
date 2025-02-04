@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:team_hive/models/question/multi_mcq_question.dart';
-import 'package:team_hive/models/question/single_mcq_question.dart';
-import 'package:team_hive/models/question/written_question.dart';
 import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
@@ -60,19 +57,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
 
   void _addQuiz() {
     setState(() {
-      widget.team.updateQuizzes([
-        Quiz(name: "new Quiz", questions: [
-          WrittenQuestion(text: "What's your name?"),
-          SingleMcqQuestion(
-              text: "What's your name?",
-              choices: ["HI", "Bye", "Hazem"],
-              answer: "Hazem"),
-          MultiMcqQuestion(
-              text: "What's a salut?",
-              choices: ["HI", "Bye", "Hazem"],
-              correctChoices: ["HI", "Bye"])
-        ])
-      ], true);
+      widget.team.updateQuizzes([Quiz(name: "")], true);
     });
   }
 }
@@ -201,11 +186,16 @@ class QuizWidget extends StatelessWidget {
     return "${date.day.toString().padLeft(2, "0")}/${date.month.toString().padLeft(2, "0")}/${date.year} ${time.hourOfPeriod}:${time.minute.toString().padLeft(2, "0")} ${time.period == DayPeriod.am ? "AM" : "PM"}";
   }
 
-  void _goToQuiz(Team team, Quiz quiz, BuildContext context) {
-    if (team.owner.email == context.read<FirebaseService>().user.email ||
-        quiz.getQuizState() == 0) {
-      Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => QuizPage(team: team, quiz: quiz)));
+  void _goToQuiz(Team team, Quiz quiz, BuildContext context) async {
+    FirebaseService firebase = context.read<FirebaseService>();
+    if (team.owner.email == firebase.user.email || quiz.getQuizState() == 0) {
+      if (quiz.questions.isEmpty) {
+        quiz = await firebase.getQuiz(team.id, quiz.name, true) ?? quiz;
+      }
+      if (context.mounted) {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => QuizPage(team: team, quiz: quiz)));
+      }
     }
   }
 }

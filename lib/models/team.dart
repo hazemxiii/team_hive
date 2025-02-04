@@ -25,6 +25,10 @@ class Team {
     _quizzes = [if (append) ..._quizzes, ...quizzes];
   }
 
+  bool isOwner(MyUser user) {
+    return user.email == _owner.email;
+  }
+
   String get name => _name;
   String get id => _id;
   Color get color => _color;

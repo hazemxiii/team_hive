@@ -13,4 +13,12 @@ interface class McqQuestion implements Question {
 
   @override
   String text;
+
+  @override
+  bool isAnswered() {
+    return true;
+  }
+
+  @override
+  Map<String, dynamic> encode() => {};
 }

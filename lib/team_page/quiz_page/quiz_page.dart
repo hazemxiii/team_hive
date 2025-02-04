@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:team_hive/models/question/mcq_question.dart';
 import 'package:team_hive/models/question/question.dart';
 import 'package:team_hive/models/question/written_question.dart';
 import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
+import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/team_page/quiz_page/fab.dart';
 import 'package:team_hive/team_page/quiz_page/question_widgets.dart';
 
 class QuizPage extends StatefulWidget {
@@ -19,19 +22,28 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   late final TextEditingController nameController;
+  late final FirebaseService _firebase;
 
   @override
   initState() {
     super.initState();
+    _firebase = context.read<FirebaseService>();
     nameController = TextEditingController(text: widget.quiz.name);
   }
 
-// TODO:add questions
-// TODO: owner vs user ui
   int _activeIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: widget.team.isOwner(_firebase.user)
+          ? Fab(
+              quiz: widget.quiz,
+              onTap: () {
+                setState(() {
+                  _activeIndex = widget.quiz.questions.length - 1;
+                });
+              })
+          : null,
       drawer: _drawer(),
       backgroundColor: Style.back,
       appBar: AppBar(
@@ -41,25 +53,27 @@ class _QuizPageState extends State<QuizPage> {
         title: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 300),
           child: TextField(
+            enabled: widget.team.isOwner(_firebase.user),
             cursorColor: Style.main,
             style: TextStyle(color: Style.main, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
             onChanged: (v) => widget.quiz.setName(v),
             controller: nameController,
             decoration: const InputDecoration(
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-            ),
+                border: InputBorder.none, hintText: "Exam Name"),
           ),
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
-          children: [
-            _answeredIndicator(),
-            _questionContainer(),
-            _navButtonsWidget()
-          ],
+          children: widget.quiz.questions.isNotEmpty
+              ? [
+                  if (!widget.team.isOwner(_firebase.user))
+                    _answeredIndicator(),
+                  _questionContainer(),
+                  _navButtonsWidget()
+                ]
+              : [],
         ),
       ),
     );
@@ -128,15 +142,57 @@ class _QuizPageState extends State<QuizPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            "Question ${_activeIndex + 1}",
-            style: Style.headingStyle,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Question ${_activeIndex + 1}",
+                style: Style.headingStyle,
+              ),
+              if (widget.team.isOwner(_firebase.user)) _questionOptions(q)
+            ],
           ),
           q is McqQuestion
-              ? McqQuestionWidget(question: q)
-              : WrittenQuestionWidget(question: (q as WrittenQuestion)),
+              ? McqQuestionWidget(
+                  question: q,
+                  edit: widget.team.isOwner(_firebase.user),
+                )
+              : WrittenQuestionWidget(
+                  question: (q as WrittenQuestion),
+                  enabled: widget.team.isOwner(_firebase.user),
+                ),
         ],
       ),
+    );
+  }
+
+  Widget _questionOptions(Question q) {
+    TextEditingController markController =
+        TextEditingController(text: q.mark.toString());
+    return Row(
+      children: [
+        Text(
+          "Mark:",
+          style: TextStyle(color: Style.main, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(
+          width: 30,
+          child: TextField(
+            cursorColor: Style.sec,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Style.sec),
+            onChanged: (v) => q.mark = double.tryParse(v) ?? 1,
+            decoration: const InputDecoration(border: InputBorder.none),
+            controller: markController,
+          ),
+        ),
+        IconButton(
+            color: Style.sec,
+            onPressed: () => _deleteQuestion(q),
+            icon: const Icon(
+              Icons.delete_outline,
+            )),
+      ],
     );
   }
 
@@ -178,7 +234,7 @@ class _QuizPageState extends State<QuizPage> {
             height: 50,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             color: Style.sec,
-            onPressed: () => isNextEnabled ? _navQuestions(true) : () {},
+            onPressed: isNextEnabled ? () => _navQuestions(true) : _sendQuiz,
             child: Row(
               children: [
                 Text(
@@ -210,4 +266,42 @@ class _QuizPageState extends State<QuizPage> {
       }
     });
   }
+
+  void _deleteQuestion(Question q) {
+    setState(() {
+      int i = widget.quiz.questions.indexOf(q);
+      if (i == _activeIndex &&
+          i == widget.quiz.questions.length - 1 &&
+          i != 0) {
+        _activeIndex--;
+      }
+      widget.quiz.questions.removeAt(i);
+      if (q.isAnswered()) {
+        QuizPage.answeredCountNot.value--;
+      }
+    });
+  }
+
+  void _sendQuiz() async {
+    bool isOwner = widget.team.isOwner(_firebase.user);
+    if (isOwner) {
+      _createQuiz();
+    } else {
+      _submitQuiz();
+    }
+  }
+
+  void _createQuiz() async {
+    String? v = widget.quiz.validateQuiz();
+    if (v != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(v)));
+    } else {
+      String? error = await _firebase.createQuiz(widget.team, widget.quiz);
+      if (error == null && mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  void _submitQuiz() async {}
 }

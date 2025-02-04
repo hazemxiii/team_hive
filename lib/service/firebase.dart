@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/models/user.dart';
 import 'package:team_hive/service/app_colors.dart';
@@ -32,7 +33,7 @@ class FirebaseService {
     try {
       await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      await _createUserDoc(fName, lName);
+      await _createUserDoc(email, fName, lName);
       await _auth.signOut();
       return null;
     } on FirebaseAuthException catch (e) {
@@ -41,11 +42,11 @@ class FirebaseService {
     }
   }
 
-  Future<void> _createUserDoc(String fName, String lName) async {
+  Future<void> _createUserDoc(String email, String fName, String lName) async {
     if (_user != null) {
       DocumentReference d = _firestore.doc("users/${_user!.uid}");
       try {
-        await d.set({"fName": fName, "lName": lName});
+        await d.set({"email": email, "fName": fName, "lName": lName});
       } catch (e) {
         debugPrint(e.toString());
       }
@@ -141,12 +142,64 @@ class FirebaseService {
       debugPrint(e.toString());
     }
     return MyUser(
-        // TODO: delete this acccount
         uid: id,
-        email: owner['email'] ?? "t@t.com",
+        email: owner['email'] ?? "",
         fName: owner['fName'] ?? "",
         lName: owner['lName'] ?? "",
         teams: []);
+  }
+
+  Future<String?> createQuiz(Team t, Quiz q) async {
+    Map<String, dynamic> quizEncoded = q.encode();
+    Map<String, dynamic> answers = quizEncoded['answers'];
+    quizEncoded.remove("answers");
+    quizEncoded.remove("name");
+    try {
+      DocumentReference quizDoc =
+          _firestore.doc("teams/${t.id}/quizzes/${q.name}");
+      DocumentReference quizAnsDoc =
+          _firestore.doc("teams/${t.id}/quizzesAnswers/${q.name}");
+      await _firestore.runTransaction((tr) async {
+        tr.set(quizDoc, quizEncoded);
+        tr.set(quizAnsDoc, answers);
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+      return e.toString();
+    }
+    return null;
+  }
+
+  Future<Quiz?> getQuiz(
+      String teamId, String quizName, bool withAnswers) async {
+    Map<String, dynamic> quizEncoded = {};
+    try {
+      DocumentSnapshot<Map<String, dynamic>> quizDoc =
+          await _firestore.doc("teams/$teamId/quizzes/$quizName").get();
+
+      quizEncoded = quizDoc.data() ?? {};
+      quizEncoded['name'] = quizName;
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    if (quizEncoded.isEmpty) {
+      return null;
+    }
+    return Quiz.decode(quizEncoded);
+  }
+
+  Future<List<Quiz>> getQuizzesByTeam(String teamId) async {
+    List<Quiz> quizzes = [];
+    try {
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs =
+          (await _firestore.collection("teams/$teamId/quizzes").get()).docs;
+      for (QueryDocumentSnapshot<Map<String, dynamic>> doc in docs) {
+        quizzes.add(Quiz(name: doc.id));
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    return quizzes;
   }
 
   MyUser get user => _currentUser;

@@ -9,5 +9,12 @@ class WrittenQuestion implements Question {
 
   String answer;
 
-  WrittenQuestion({this.mark = 0, this.text = "", this.answer = ""});
+  WrittenQuestion({this.mark = 1, this.text = "", this.answer = ""});
+
+  @override
+  bool isAnswered() => answer.trim() != "";
+
+  @override
+  Map<String, dynamic> encode() =>
+      {"text": text, "answer": answer, "mark": mark, "type": 0};
 }

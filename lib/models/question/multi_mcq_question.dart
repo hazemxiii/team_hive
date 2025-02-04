@@ -15,11 +15,26 @@ class MultiMcqQuestion implements McqQuestion {
 
   MultiMcqQuestion({
     this.text = "",
-    List<String> correctChoices = const [""],
-    List<String> choices = const [""],
+    List<String> correctChoices = const [],
+    List<String> choices = const [],
+    List<String> answer = const [],
     this.mark = 1,
   }) {
     this.correctChoices.addAll(correctChoices);
     this.choices.addAll(choices);
+    this.answer.addAll(answer);
   }
+
+  @override
+  bool isAnswered() => answer.isNotEmpty;
+
+  @override
+  Map<String, dynamic> encode() => {
+        "choices": choices,
+        "text": text,
+        "answer": answer,
+        "mark": mark,
+        "correct": correctChoices,
+        "type": 2
+      };
 }

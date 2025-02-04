@@ -8,7 +8,9 @@ import 'package:team_hive/team_page/quiz_page/quiz_page.dart';
 
 class McqQuestionWidget extends StatefulWidget {
   final McqQuestion question;
-  const McqQuestionWidget({super.key, required this.question});
+  final bool edit;
+  const McqQuestionWidget(
+      {super.key, required this.question, required this.edit});
 
   @override
   State<McqQuestionWidget> createState() => _McqQuestionWidgetState();
@@ -30,7 +32,9 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
         Container(
           margin: const EdgeInsets.symmetric(vertical: 10),
           child: TextField(
-            decoration: const InputDecoration(border: InputBorder.none),
+            enabled: widget.edit,
+            decoration: const InputDecoration(
+                border: InputBorder.none, hintText: "Question"),
             cursorColor: Style.main,
             controller: controller,
             onChanged: (v) => widget.question.text = v,
@@ -40,32 +44,72 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
         Column(
           children: [
             ...widget.question.choices.map((choice) {
-              return _choiceWidget(choice);
+              return _choiceWidget(choice, false);
             }),
+            if (widget.edit) _choiceWidget("", true)
           ],
         )
       ],
     );
   }
 
-  Widget _choiceWidget(String choice) {
+  Widget _choiceWidget(String choice, bool isLast) {
+    final TextEditingController controller =
+        TextEditingController(text: choice);
+    controller.selection = TextSelection.collapsed(offset: choice.length);
+    TextField text = TextField(
+      cursorColor: Style.main,
+      enabled: widget.edit,
+      onChanged: (v) => !isLast ? _changeChoice(choice, v) : _addChoice(v),
+      controller: controller,
+      decoration:
+          const InputDecoration(border: InputBorder.none, hintText: "Option"),
+    );
     if (widget.question is SingleMcqQuestion) {
       return RadioListTile(
           activeColor: Style.sec,
           contentPadding: const EdgeInsets.all(0),
-          title: Text(choice),
+          title: text,
           value: choice,
           groupValue: (widget.question as SingleMcqQuestion).answer,
-          onChanged: (v) =>
-              _setSingleChoice(widget.question as SingleMcqQuestion, v));
+          onChanged: (v) => !isLast
+              ? _setSingleChoice(widget.question as SingleMcqQuestion, v)
+              : null);
     }
     return CheckboxListTile(
         contentPadding: const EdgeInsets.all(0),
         activeColor: Style.sec,
-        title: Text(choice),
+        title: text,
         value: (widget.question as MultiMcqQuestion).answer.contains(choice),
-        onChanged: (v) =>
-            _setMultiChoice((widget.question as MultiMcqQuestion), choice));
+        onChanged: (v) => !isLast
+            ? _setMultiChoice((widget.question as MultiMcqQuestion), choice)
+            : null);
+  }
+
+  void _addChoice(String v) {
+    setState(() {
+      widget.question.choices.add(v);
+    });
+  }
+
+  void _changeChoice(String old, String v) {
+    if (widget.question.choices.contains(v)) {
+      return;
+    }
+    int choiceI = widget.question.choices.indexOf(old);
+    setState(() {
+      widget.question.choices[choiceI] = v;
+    });
+    if (widget.question is SingleMcqQuestion) {
+      if ((widget.question as SingleMcqQuestion).answer == old) {
+        (widget.question as SingleMcqQuestion).answer = v;
+      }
+    } else {
+      int oldI = (widget.question as MultiMcqQuestion).answer.indexOf(old);
+      if (oldI != -1) {
+        (widget.question as MultiMcqQuestion).answer[oldI] = v;
+      }
+    }
   }
 
   void _setSingleChoice(SingleMcqQuestion q, String? choice) {
@@ -98,7 +142,9 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
 
 class WrittenQuestionWidget extends StatelessWidget {
   final WrittenQuestion question;
-  const WrittenQuestionWidget({super.key, required this.question});
+  final bool enabled;
+  const WrittenQuestionWidget(
+      {super.key, required this.question, required this.enabled});
 
   @override
   Widget build(BuildContext context) {
@@ -110,9 +156,11 @@ class WrittenQuestionWidget extends StatelessWidget {
     return Column(
       children: [
         TextField(
+          enabled: enabled,
           cursorColor: Style.main,
           style: TextStyle(color: Style.main, fontWeight: FontWeight.bold),
-          decoration: const InputDecoration(border: InputBorder.none),
+          decoration: const InputDecoration(
+              border: InputBorder.none, hintText: "Question"),
           onChanged: (v) => question.text = v,
           controller: questionController,
         ),
