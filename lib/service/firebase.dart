@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,13 +7,14 @@ import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/models/user.dart';
 import 'package:team_hive/service/app_colors.dart';
+import 'package:http/http.dart' as http;
 
 class FirebaseService {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   late MyUser _currentUser;
 
-  Future<void> getUserData() async {
+  Future<void> getCurrentUserProfile() async {
     if (_user == null) {
       return;
     }
@@ -22,7 +25,7 @@ class FirebaseService {
           email: _user!.email ?? "",
           fName: d.get("fName") ?? "",
           lName: d.get("lName") ?? "",
-          teams: await getTeams());
+          teams: await getTeamsNames());
     } catch (e) {
       debugPrint("Error getting user data: $e");
     }
@@ -56,7 +59,7 @@ class FirebaseService {
   Future<String?> emailSignIn(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
-      await getUserData();
+      await getCurrentUserProfile();
       return null;
     } on FirebaseAuthException catch (e) {
       debugPrint(e.message);
@@ -97,7 +100,7 @@ class FirebaseService {
     await userRef.update({"teams": teamsIds});
   }
 
-  Future<List<Team>> getTeams() async {
+  Future<List<Team>> getTeamsNames() async {
     List<Team> teams = [];
     List<dynamic> teamsId = [];
     try {
@@ -110,12 +113,12 @@ class FirebaseService {
       debugPrint(e.toString());
     }
     for (String id in teamsId) {
-      teams.add(await _getTeamById(id));
+      teams.add(await _getTeamNameById(id));
     }
     return teams;
   }
 
-  Future<Team> _getTeamById(String id) async {
+  Future<Team> _getTeamNameById(String id) async {
     Map<String, dynamic> team = {};
     DocumentSnapshot<Map<String, dynamic>> teamDoc =
         await _firestore.doc("teams/$id").get();
@@ -126,11 +129,11 @@ class FirebaseService {
     return Team(
         name: team['name'] ?? "",
         color: Color(team['color'] ?? Style.sec.value),
-        owner: await _getOwner(team['owner'] ?? ""),
+        owner: await _getOwnerProfile(team['owner'] ?? ""),
         id: id);
   }
 
-  Future<MyUser> _getOwner(String id) async {
+  Future<MyUser> _getOwnerProfile(String id) async {
     Map<String, dynamic> owner = {};
     try {
       DocumentSnapshot<Map<String, dynamic>> ownerDoc =
@@ -150,7 +153,7 @@ class FirebaseService {
   }
 
   Future<String?> createQuiz(Team t, Quiz q) async {
-    Map<String, dynamic> quizEncoded = q.encode();
+    Map<String, dynamic> quizEncoded = q.encode(true);
     Map<String, dynamic> answers = quizEncoded['answers'];
     quizEncoded.remove("answers");
     quizEncoded.remove("name");
@@ -170,8 +173,14 @@ class FirebaseService {
     return null;
   }
 
-  Future<Quiz?> getQuiz(
-      String teamId, String quizName, bool withAnswers) async {
+  Future<Quiz?> getQuizData(
+      String teamId, String quizName, bool isOwner) async {
+    if (!isOwner) {
+      bool start = await _startQuizSession(quizName, teamId);
+      if (!start) {
+        return null;
+      }
+    }
     Map<String, dynamic> quizEncoded = {};
     try {
       DocumentSnapshot<Map<String, dynamic>> quizDoc =
@@ -188,18 +197,74 @@ class FirebaseService {
     return Quiz.decode(quizEncoded);
   }
 
-  Future<List<Quiz>> getQuizzesByTeam(String teamId) async {
+  Future<List<Quiz>> getQuizzesDisplayData(String teamId, bool isOwner) async {
     List<Quiz> quizzes = [];
     try {
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs =
           (await _firestore.collection("teams/$teamId/quizzes").get()).docs;
       for (QueryDocumentSnapshot<Map<String, dynamic>> doc in docs) {
-        quizzes.add(Quiz(name: doc.id));
+        Map<String, dynamic> data = doc.data();
+        Timestamp? startDate = data["startDate"];
+        Timestamp? deadline = data["deadline"];
+        Map<String, dynamic> answers = {};
+        if (!isOwner) {
+          DocumentSnapshot<Map<String, dynamic>> answerDoc = await _firestore
+              .doc("/teams/$teamId/responses/${doc.id}/r/${user.uid}")
+              .get();
+          if (answerDoc.exists) {
+            answers = answerDoc.data() ?? {};
+          }
+        }
+        quizzes.add(Quiz(
+            grade: answers['grade'],
+            name: doc.id,
+            startDate: startDate?.toDate(),
+            deadline: deadline?.toDate()));
       }
     } catch (e) {
       debugPrint(e.toString());
     }
     return quizzes;
+  }
+
+  Future<bool> _startQuizSession(String quizName, String teamId) async {
+    Map<String, String> data = {
+      "quiz": quizName,
+      "team": teamId,
+      "token": await getToken() ?? ""
+    };
+    try {
+      var url = Uri.http("127.0.0.1:5000", "quiz/start");
+      var r = await http.post(url,
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(data));
+      if (r.body == "true") {
+        return true;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      return false;
+    }
+    return false;
+  }
+
+  Future<void> submitQuiz(Quiz q, Team t) async {
+    Map<String, dynamic> data = q.encode(false)['answers'];
+    data['token'] = await getToken();
+    data['quiz'] = q.name;
+    data['team'] = t.id;
+    var url = Uri.http("127.0.0.1:5000", "quiz/submit");
+    await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode(data),
+    );
+  }
+
+  Future<String?> getToken() async {
+    return await _auth.currentUser!.getIdToken();
   }
 
   MyUser get user => _currentUser;

@@ -40,7 +40,7 @@ class App extends StatelessWidget {
       home: !firebase.isLogged
           ? const LoginPage()
           : FutureBuilder(
-              future: firebase.getUserData(),
+              future: firebase.getCurrentUserProfile(),
               builder: (_, snap) {
                 if (snap.connectionState != ConnectionState.done) {
                   return const SizedBox();

@@ -30,6 +30,7 @@ class _TeamPageState extends State<TeamPage> {
 
   @override
   Widget build(BuildContext context) {
+    _firebase.getToken();
     return Scaffold(
       drawer: _drawer(),
       backgroundColor: Style.back,

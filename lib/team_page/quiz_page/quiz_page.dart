@@ -303,5 +303,7 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
-  void _submitQuiz() async {}
+  void _submitQuiz() async {
+    _firebase.submitQuiz(widget.quiz, widget.team);
+  }
 }

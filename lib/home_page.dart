@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:team_hive/coming_soon.dart';
 import 'package:team_hive/nav_bars.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/teams_page.dart';
+import 'package:team_hive/teams_page/teams_page.dart';
 
 class ActivePage {
   static final ValueNotifier<int> _activePageI = ValueNotifier(1);

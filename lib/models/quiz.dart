@@ -23,23 +23,17 @@ class Quiz {
     _questions.addAll(questions);
   }
 
+  void copy(Quiz q) {
+    _name = q.name;
+    _grade = q.grade;
+    _startDate = q.startDate;
+    _deadline = q.deadline;
+    _questions.clear();
+    _questions.addAll(q.questions);
+  }
+
   void setName(String v) {
     _name = v;
-  }
-
-  double totalGrade() {
-    double sum = 0;
-    for (Question q in _questions) {
-      sum += q.mark;
-    }
-    return sum;
-  }
-
-  int? percent() {
-    if (grade == null || _questions.isEmpty) {
-      return null;
-    }
-    return (grade! / totalGrade() * 100).ceil();
   }
 
   int getQuizState() {
@@ -88,12 +82,12 @@ class Quiz {
     return null;
   }
 
-  Map<String, dynamic> encode() {
+  Map<String, dynamic> encode(bool isOwner) {
     List<Map<String, dynamic>> questions = [];
     Map<String, dynamic> answers = {};
     for (Question q in _questions) {
       Map<String, dynamic> encoded = q.encode();
-      if (encoded['type'] != 0) {
+      if (encoded['type'] != 0 || !isOwner) {
         answers[q.text] = encoded['answer'];
       }
       encoded.remove("answer");
@@ -118,8 +112,8 @@ class Quiz {
     return Quiz(
         name: encoded['name'],
         grade: encoded['grade'],
-        startDate: encoded["startDate"],
-        deadline: encoded['deadline'],
+        startDate: encoded["startDate"]?.toDate(),
+        deadline: encoded['deadline']?.toDate(),
         questions: questions);
   }
 

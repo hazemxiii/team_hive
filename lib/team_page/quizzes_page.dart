@@ -69,7 +69,6 @@ class QuizWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int? percent = quiz.percent();
     int status = quiz.getQuizState();
     return InkWell(
       onTap: () => _goToQuiz(team, quiz, context),
@@ -94,10 +93,10 @@ class QuizWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (percent != null) _gradeWidget(percent)
+                if (quiz.grade != null) _gradeWidget(quiz.grade!)
               ],
             ),
-            if (percent == null)
+            if (quiz.grade == null)
               Container(
                   margin: const EdgeInsets.symmetric(vertical: 5),
                   child: _examStatusWidget(status)),
@@ -110,7 +109,7 @@ class QuizWidget extends StatelessWidget {
     );
   }
 
-  Widget _gradeWidget(int percent) {
+  Widget _gradeWidget(double grade) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       decoration: BoxDecoration(
@@ -119,7 +118,7 @@ class QuizWidget extends StatelessWidget {
       child: Text(
           style: TextStyle(
               color: Style.main, fontWeight: FontWeight.bold, fontSize: 12),
-          "Grade: $percent%"),
+          "Grade: $grade"),
     );
   }
 
@@ -188,9 +187,13 @@ class QuizWidget extends StatelessWidget {
 
   void _goToQuiz(Team team, Quiz quiz, BuildContext context) async {
     FirebaseService firebase = context.read<FirebaseService>();
-    if (team.owner.email == firebase.user.email || quiz.getQuizState() == 0) {
+    bool isOwner = team.isOwner(firebase.user);
+    if (isOwner || quiz.getQuizState() == 0) {
       if (quiz.questions.isEmpty) {
-        quiz = await firebase.getQuiz(team.id, quiz.name, true) ?? quiz;
+        Quiz? q = await firebase.getQuizData(team.id, quiz.name, isOwner);
+        if (q != null) {
+          quiz.copy(q);
+        }
       }
       if (context.mounted) {
         Navigator.of(context).push(MaterialPageRoute(
