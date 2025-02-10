@@ -42,8 +42,11 @@ class _QuizzesPageState extends State<QuizzesPage> {
           Expanded(
             child: GridView.builder(
                 itemCount: widget.team.quizzes.length,
-                itemBuilder: (_, i) =>
-                    QuizWidget(team: widget.team, quiz: widget.team.quizzes[i]),
+                itemBuilder: (_, i) => QuizWidget(
+                      team: widget.team,
+                      quiz: widget.team.quizzes[i],
+                      goToQuiz: _goToQuiz,
+                    ),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
@@ -56,22 +59,43 @@ class _QuizzesPageState extends State<QuizzesPage> {
   }
 
   void _addQuiz() {
-    setState(() {
-      widget.team.updateQuizzes([Quiz(name: "")], true);
-    });
+    _goToQuiz(widget.team, Quiz(name: ""), context);
+  }
+
+  void _goToQuiz(Team team, Quiz quiz, BuildContext context) async {
+    FirebaseService firebase = context.read<FirebaseService>();
+    bool isOwner = team.isOwner(firebase.user);
+    if (isOwner || quiz.getQuizState() == 0 || quiz.getQuizState() == 1) {
+      if (quiz.questions.isEmpty) {
+        Quiz? q = await firebase.getQuizData(team.id, quiz.name, isOwner);
+        if (q != null) {
+          q.setGrade(quiz.grade);
+          quiz.copy(q);
+        }
+      }
+      if (context.mounted) {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => QuizPage(team: team, quiz: quiz)));
+      }
+    }
   }
 }
 
 class QuizWidget extends StatelessWidget {
   final Quiz quiz;
   final Team team;
-  const QuizWidget({super.key, required this.quiz, required this.team});
+  final Function goToQuiz;
+  const QuizWidget(
+      {super.key,
+      required this.quiz,
+      required this.team,
+      required this.goToQuiz});
 
   @override
   Widget build(BuildContext context) {
     int status = quiz.getQuizState();
     return InkWell(
-      onTap: () => _goToQuiz(team, quiz, context),
+      onTap: () => goToQuiz(team, quiz, context),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -183,22 +207,5 @@ class QuizWidget extends StatelessWidget {
   String _formattedDate(DateTime date) {
     TimeOfDay time = TimeOfDay.fromDateTime(date);
     return "${date.day.toString().padLeft(2, "0")}/${date.month.toString().padLeft(2, "0")}/${date.year} ${time.hourOfPeriod}:${time.minute.toString().padLeft(2, "0")} ${time.period == DayPeriod.am ? "AM" : "PM"}";
-  }
-
-  void _goToQuiz(Team team, Quiz quiz, BuildContext context) async {
-    FirebaseService firebase = context.read<FirebaseService>();
-    bool isOwner = team.isOwner(firebase.user);
-    if (isOwner || quiz.getQuizState() == 0) {
-      if (quiz.questions.isEmpty) {
-        Quiz? q = await firebase.getQuizData(team.id, quiz.name, isOwner);
-        if (q != null) {
-          quiz.copy(q);
-        }
-      }
-      if (context.mounted) {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => QuizPage(team: team, quiz: quiz)));
-      }
-    }
   }
 }

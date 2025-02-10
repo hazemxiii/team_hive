@@ -5,11 +5,11 @@ interface class McqQuestion implements Question {
   McqQuestion({
     this.choices = const [""],
     this.text = "",
-    this.mark = 1,
+    this.totalMark = 1,
   });
 
   @override
-  double mark;
+  double totalMark;
 
   @override
   String text;
@@ -21,4 +21,12 @@ interface class McqQuestion implements Question {
 
   @override
   Map<String, dynamic> encode() => {};
+
+  @override
+  bool? isQuestionCorrect() => true;
+  bool isChoiceCorrect(String choice) => true;
+  bool hasCorrectAnswer() => true;
+
+  @override
+  double mark() => totalMark;
 }

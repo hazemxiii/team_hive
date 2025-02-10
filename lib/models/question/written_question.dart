@@ -2,19 +2,28 @@ import 'package:team_hive/models/question/question.dart';
 
 class WrittenQuestion implements Question {
   @override
-  double mark;
+  double totalMark;
 
   @override
   String text;
 
   String answer;
 
-  WrittenQuestion({this.mark = 1, this.text = "", this.answer = ""});
+  WrittenQuestion({this.totalMark = 1, this.text = "", this.answer = ""});
 
   @override
   bool isAnswered() => answer.trim() != "";
 
   @override
   Map<String, dynamic> encode() =>
-      {"text": text, "answer": answer, "mark": mark, "type": 0};
+      {"text": text, "answer": answer, "mark": totalMark, "type": 0};
+
+  @override
+  bool isQuestionCorrect() => true;
+
+  @override
+  double mark() {
+    // TODO: implement mark
+    return 0;
+  }
 }

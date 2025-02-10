@@ -12,13 +12,13 @@ class SingleMcqQuestion implements McqQuestion {
   String? answer;
 
   @override
-  double mark;
+  double totalMark;
 
   SingleMcqQuestion(
       {this.text = "",
       this.answer,
       List<String> choices = const [],
-      this.mark = 1,
+      this.totalMark = 1,
       this.correctAnswer}) {
     this.choices.addAll(choices);
   }
@@ -32,9 +32,34 @@ class SingleMcqQuestion implements McqQuestion {
       "choices": choices,
       "text": text,
       "answer": answer,
-      "mark": mark,
+      "mark": totalMark,
       "correct": correctAnswer,
       "type": 1
     };
+  }
+
+  @override
+  bool isChoiceCorrect(String choice) => choice == correctAnswer;
+
+  @override
+  bool? isQuestionCorrect() {
+    if (!hasCorrectAnswer()) {
+      return null;
+    }
+    if (answer == correctAnswer) {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  bool hasCorrectAnswer() => correctAnswer != null;
+
+  @override
+  double mark() {
+    if (isQuestionCorrect() ?? false) {
+      return totalMark;
+    }
+    return 0;
   }
 }

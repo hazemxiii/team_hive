@@ -82,6 +82,10 @@ class Quiz {
     return null;
   }
 
+  void setGrade(double? grade) {
+    _grade = grade;
+  }
+
   Map<String, dynamic> encode(bool isOwner) {
     List<Map<String, dynamic>> questions = [];
     Map<String, dynamic> answers = {};
@@ -107,6 +111,8 @@ class Quiz {
     List questionsEncoded = encoded['questions'] ?? [];
     List<Question> questions = [];
     for (Map<String, dynamic> q in questionsEncoded) {
+      q['answer'] = encoded['answers']?[q['text']];
+      q['correct'] = encoded['correct']?[q['text']];
       questions.add(Question.decode(q));
     }
     return Quiz(

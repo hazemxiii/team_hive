@@ -18,17 +18,18 @@ class FirebaseService {
     if (_user == null) {
       return;
     }
+    Map<String, dynamic> d = {};
     try {
-      DocumentSnapshot d = await _firestore.doc("users/${_user!.uid}").get();
-      _currentUser = MyUser(
-          uid: _user!.uid,
-          email: _user!.email ?? "",
-          fName: d.get("fName") ?? "",
-          lName: d.get("lName") ?? "",
-          teams: await getTeamsNames());
+      d = (await _firestore.doc("users/${_user!.uid}").get()).data() ?? {};
     } catch (e) {
       debugPrint("Error getting user data: $e");
     }
+    _currentUser = MyUser(
+        uid: _user!.uid,
+        email: _user!.email ?? "",
+        fName: d["fName"] ?? "",
+        lName: d["lName"] ?? "",
+        teams: await getTeamsNames());
   }
 
   Future<String?> createEmailAccount(
@@ -67,8 +68,8 @@ class FirebaseService {
     }
   }
 
-  void signOut() {
-    _auth.signOut();
+  Future<void> signOut() async {
+    await _auth.signOut();
   }
 
   Future<bool> createTeam(String teamName) async {
@@ -186,7 +187,25 @@ class FirebaseService {
       DocumentSnapshot<Map<String, dynamic>> quizDoc =
           await _firestore.doc("teams/$teamId/quizzes/$quizName").get();
 
+      DocumentSnapshot<Map<String, dynamic>> userAnsDoc = await _firestore
+          .doc("/teams/$teamId/responses/$quizName/r/${user.uid}")
+          .get();
+
+      Map<String, dynamic> userAns = {};
+
+      if (userAnsDoc.exists) {
+        userAns = userAnsDoc.data() ?? {};
+      }
+
+      Map<String, dynamic> correctAnswers = (await _firestore
+                  .doc("/teams/$teamId/quizzesAnswers/$quizName")
+                  .get())
+              .data() ??
+          {};
+
       quizEncoded = quizDoc.data() ?? {};
+      quizEncoded['correct'] = correctAnswers;
+      quizEncoded['answers'] = userAns['answers'];
       quizEncoded['name'] = quizName;
     } catch (e) {
       debugPrint(e.toString());
@@ -249,7 +268,7 @@ class FirebaseService {
   }
 
   Future<void> submitQuiz(Quiz q, Team t) async {
-    Map<String, dynamic> data = q.encode(false)['answers'];
+    Map<String, dynamic> data = q.encode(t.isOwner(user))['answers'];
     data['token'] = await getToken();
     data['quiz'] = q.name;
     data['team'] = t.id;

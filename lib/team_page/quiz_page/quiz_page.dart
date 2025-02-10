@@ -68,7 +68,7 @@ class _QuizPageState extends State<QuizPage> {
         child: Column(
           children: widget.quiz.questions.isNotEmpty
               ? [
-                  if (!widget.team.isOwner(_firebase.user))
+                  if (!widget.team.isOwner(_firebase.user) && !_isDisplayOnly())
                     _answeredIndicator(),
                   _questionContainer(),
                   _navButtonsWidget()
@@ -133,7 +133,7 @@ class _QuizPageState extends State<QuizPage> {
 
   Widget _questionContainer() {
     Question q = widget.quiz.questions[_activeIndex];
-
+    bool? isCorrect = q.isQuestionCorrect();
     return Container(
       margin: const EdgeInsets.all(10),
       width: double.infinity,
@@ -149,17 +149,24 @@ class _QuizPageState extends State<QuizPage> {
                 "Question ${_activeIndex + 1}",
                 style: Style.headingStyle,
               ),
-              if (widget.team.isOwner(_firebase.user)) _questionOptions(q)
+              if (widget.team.isOwner(_firebase.user)) _questionOptions(q),
+              // TODO: display written mark too
+              if (!widget.team.isOwner(_firebase.user) &&
+                  isCorrect != null &&
+                  q is McqQuestion)
+                _markWidget(q)
             ],
           ),
           q is McqQuestion
               ? McqQuestionWidget(
+                  isDisplay: _isDisplayOnly(),
                   question: q,
-                  edit: widget.team.isOwner(_firebase.user),
+                  isOwner: widget.team.isOwner(_firebase.user),
                 )
               : WrittenQuestionWidget(
+                  isDisplay: _isDisplayOnly(),
                   question: (q as WrittenQuestion),
-                  enabled: widget.team.isOwner(_firebase.user),
+                  isOwner: widget.team.isOwner(_firebase.user),
                 ),
         ],
       ),
@@ -168,7 +175,7 @@ class _QuizPageState extends State<QuizPage> {
 
   Widget _questionOptions(Question q) {
     TextEditingController markController =
-        TextEditingController(text: q.mark.toString());
+        TextEditingController(text: q.totalMark.toString());
     return Row(
       children: [
         Text(
@@ -181,7 +188,7 @@ class _QuizPageState extends State<QuizPage> {
             cursorColor: Style.sec,
             textAlign: TextAlign.center,
             style: TextStyle(color: Style.sec),
-            onChanged: (v) => q.mark = double.tryParse(v) ?? 1,
+            onChanged: (v) => q.totalMark = double.tryParse(v) ?? 1,
             decoration: const InputDecoration(border: InputBorder.none),
             controller: markController,
           ),
@@ -196,9 +203,20 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 
+  Widget _markWidget(Question q) {
+    double mark = q.mark();
+    return Text(
+      "${q.mark()}/${q.totalMark}",
+      style: TextStyle(
+          color: mark == q.totalMark ? Colors.green : Colors.red,
+          fontWeight: FontWeight.bold),
+    );
+  }
+
   Widget _navButtonsWidget() {
     bool isNextEnabled = _activeIndex < widget.quiz.questions.length - 1;
     bool isPrevEnabled = _activeIndex > 0;
+
     return Padding(
       padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
       child: Row(
@@ -227,34 +245,44 @@ class _QuizPageState extends State<QuizPage> {
               ],
             ),
           ),
-          MaterialButton(
-            shape: RoundedRectangleBorder(
-                side: BorderSide(color: Style.sec),
-                borderRadius: const BorderRadius.all(Radius.circular(5))),
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            color: Style.sec,
-            onPressed: isNextEnabled ? () => _navQuestions(true) : _sendQuiz,
-            child: Row(
-              children: [
-                Text(
-                  isNextEnabled ? "Next" : "Submit",
-                  style: TextStyle(color: Style.back),
-                ),
-                if (!isNextEnabled)
-                  const SizedBox(
-                    width: 5,
+          if (isNextEnabled || !_isDisplayOnly())
+            MaterialButton(
+              shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Style.sec),
+                  borderRadius: const BorderRadius.all(Radius.circular(5))),
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              color: Style.sec,
+              onPressed: isNextEnabled ? () => _navQuestions(true) : _sendQuiz,
+              child: Row(
+                children: [
+                  Text(
+                    isNextEnabled ? "Next" : "Submit",
+                    style: TextStyle(color: Style.back),
                   ),
-                Icon(
-                  isNextEnabled ? Icons.arrow_forward_ios : Icons.send_rounded,
-                  color: Style.back,
-                ),
-              ],
-            ),
-          )
+                  if (!isNextEnabled)
+                    const SizedBox(
+                      width: 5,
+                    ),
+                  Icon(
+                    isNextEnabled
+                        ? Icons.arrow_forward_ios
+                        : Icons.send_rounded,
+                    color: Style.back,
+                  ),
+                ],
+              ),
+            )
         ],
       ),
     );
+  }
+
+  bool _isDisplayOnly() {
+    if (widget.quiz.grade == null && widget.quiz.getQuizState() != 2) {
+      return false;
+    }
+    return true;
   }
 
   void _navQuestions(bool next) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:team_hive/coming_soon.dart';
 import 'package:team_hive/nav_bars.dart';
 import 'package:team_hive/service/app_colors.dart';
+import 'package:team_hive/settings_page.dart';
 import 'package:team_hive/teams_page/teams_page.dart';
 
 class ActivePage {
@@ -31,10 +32,7 @@ class _HomePageState extends State<HomePage> {
       title: "Tasks",
       isFullPage: false,
     ),
-    ComingSoonPage(
-      title: "Settings",
-      isFullPage: false,
-    )
+    SettingsPage()
   ];
   @override
   void initState() {

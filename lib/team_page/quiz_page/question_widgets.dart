@@ -8,9 +8,13 @@ import 'package:team_hive/team_page/quiz_page/quiz_page.dart';
 
 class McqQuestionWidget extends StatefulWidget {
   final McqQuestion question;
-  final bool edit;
+  final bool isOwner;
+  final bool isDisplay;
   const McqQuestionWidget(
-      {super.key, required this.question, required this.edit});
+      {super.key,
+      required this.question,
+      required this.isOwner,
+      required this.isDisplay});
 
   @override
   State<McqQuestionWidget> createState() => _McqQuestionWidgetState();
@@ -32,7 +36,7 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
         Container(
           margin: const EdgeInsets.symmetric(vertical: 10),
           child: TextField(
-            enabled: widget.edit,
+            enabled: widget.isOwner,
             decoration: const InputDecoration(
                 border: InputBorder.none, hintText: "Question"),
             cursorColor: Style.main,
@@ -46,9 +50,11 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
             ...widget.question.choices.map((choice) {
               return _choiceWidget(choice, false);
             }),
-            if (widget.edit) _choiceWidget("", true)
+            if (widget.isOwner) _choiceWidget("", true)
           ],
-        )
+        ),
+        if (!(widget.question.isQuestionCorrect() ?? true))
+          _correctAnswerWidget()
       ],
     );
   }
@@ -58,8 +64,9 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
         TextEditingController(text: choice);
     controller.selection = TextSelection.collapsed(offset: choice.length);
     TextField text = TextField(
+      style: TextStyle(color: Style.main),
       cursorColor: Style.main,
-      enabled: widget.edit,
+      enabled: widget.isOwner,
       onChanged: (v) => !isLast ? _changeChoice(choice, v) : _addChoice(v),
       controller: controller,
       decoration:
@@ -67,23 +74,36 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
     );
     if (widget.question is SingleMcqQuestion) {
       return RadioListTile(
-          activeColor: Style.sec,
+          activeColor: _getChoiceActiveColor(choice),
           contentPadding: const EdgeInsets.all(0),
           title: text,
           value: choice,
           groupValue: (widget.question as SingleMcqQuestion).answer,
-          onChanged: (v) => !isLast
+          onChanged: (v) => (!isLast && !widget.isDisplay)
               ? _setSingleChoice(widget.question as SingleMcqQuestion, v)
               : null);
     }
     return CheckboxListTile(
         contentPadding: const EdgeInsets.all(0),
-        activeColor: Style.sec,
+        activeColor: _getChoiceActiveColor(choice),
         title: text,
         value: (widget.question as MultiMcqQuestion).answer.contains(choice),
-        onChanged: (v) => !isLast
+        onChanged: (v) => (!isLast && !widget.isDisplay)
             ? _setMultiChoice((widget.question as MultiMcqQuestion), choice)
             : null);
+  }
+
+  Widget _correctAnswerWidget() {
+    String s;
+    try {
+      s = (widget.question as MultiMcqQuestion).correctChoices.join(",");
+    } catch (e) {
+      s = (widget.question as SingleMcqQuestion).correctAnswer!;
+    }
+    return Text(
+      "Correct Answer: $s",
+      style: TextStyle(color: Style.sec),
+    );
   }
 
   void _addChoice(String v) {
@@ -138,13 +158,40 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
       }
     });
   }
+
+  Color _getChoiceActiveColor(String choice) {
+    if (!widget.question.hasCorrectAnswer()) {
+      return Style.sec;
+    }
+    if (widget.question.isChoiceCorrect(choice)) {
+      return Colors.green;
+    } else {
+      return Colors.red;
+    }
+  }
+
+  // Color _getMultiChocieActiveColor(String choice) {
+  //   List<String> correct = (widget.question as MultiMcqQuestion).correctChoices;
+  //   if (correct.isEmpty) {
+  //     return Style.sec;
+  //   }
+  //   if (correct.contains(choice)) {
+  //     return Colors.green;
+  //   } else {
+  //     return Colors.red;
+  //   }
+  // }
 }
 
 class WrittenQuestionWidget extends StatelessWidget {
   final WrittenQuestion question;
-  final bool enabled;
+  final bool isOwner;
+  final bool isDisplay;
   const WrittenQuestionWidget(
-      {super.key, required this.question, required this.enabled});
+      {super.key,
+      required this.question,
+      required this.isOwner,
+      required this.isDisplay});
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +203,7 @@ class WrittenQuestionWidget extends StatelessWidget {
     return Column(
       children: [
         TextField(
-          enabled: enabled,
+          enabled: isOwner,
           cursorColor: Style.main,
           style: TextStyle(color: Style.main, fontWeight: FontWeight.bold),
           decoration: const InputDecoration(
@@ -165,6 +212,7 @@ class WrittenQuestionWidget extends StatelessWidget {
           controller: questionController,
         ),
         TextField(
+          enabled: !isDisplay,
           cursorColor: Style.sec,
           style: TextStyle(color: Style.sec),
           maxLines: null,
