@@ -32,7 +32,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
                 width: 15,
               ),
               if (widget.team.owner.email ==
-                  context.read<FirebaseService>().user.email)
+                  context.read<BackendService>().user.email)
                 IconButton(
                     color: Style.sec,
                     onPressed: _addQuiz,
@@ -59,24 +59,27 @@ class _QuizzesPageState extends State<QuizzesPage> {
   }
 
   void _addQuiz() {
-    _goToQuiz(widget.team, Quiz(name: ""), context);
+    _goToQuiz(context, widget.team, Quiz(name: ""), false);
   }
 
-  void _goToQuiz(Team team, Quiz quiz, BuildContext context) async {
-    FirebaseService firebase = context.read<FirebaseService>();
-    bool isOwner = team.isOwner(firebase.user);
-    if (isOwner || quiz.getQuizState() == 0 || quiz.getQuizState() == 1) {
-      if (quiz.questions.isEmpty) {
-        Quiz? q = await firebase.getQuizData(team.id, quiz.name, isOwner);
-        if (q != null) {
-          q.setGrade(quiz.grade);
-          quiz.copy(q);
+  void _goToQuiz(
+      BuildContext context, Team team, Quiz quiz, bool withDetails) async {
+    if (withDetails) {
+      BackendService firebase = context.read<BackendService>();
+      bool isOwner = team.isOwner(firebase.user);
+      if (isOwner || quiz.getQuizState() == 0 || quiz.getQuizState() == 1) {
+        if (quiz.questions.isEmpty) {
+          Quiz? q = await firebase.getQuizData(team.id, quiz.name);
+          if (q != null) {
+            q.setGrade(quiz.grade);
+            quiz.copy(q);
+          }
         }
       }
-      if (context.mounted) {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => QuizPage(team: team, quiz: quiz)));
-      }
+    }
+    if (context.mounted) {
+      Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => QuizPage(team: team, quiz: quiz)));
     }
   }
 }
@@ -95,7 +98,7 @@ class QuizWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     int status = quiz.getQuizState();
     return InkWell(
-      onTap: () => goToQuiz(team, quiz, context),
+      onTap: () => goToQuiz(context, team, quiz, true),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(

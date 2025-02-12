@@ -14,6 +14,14 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final controller = PageController(initialPage: 0);
+
+  @override
+  void dispose() {
+    controller.dispose();
+    SignUp.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     const double minWidth = 600;
@@ -146,7 +154,7 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _createAccount() async {
-    String? s = await FirebaseService().createEmailAccount(SignUp.email.text,
+    String? s = await BackendService().createEmailAccount(SignUp.email.text,
         SignUp.password.text, SignUp.fName.text, SignUp.lName.text);
 
     if (mounted) {

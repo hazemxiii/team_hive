@@ -21,12 +21,20 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
   final _createController = TextEditingController();
   final _joinFormKey = GlobalKey<FormState>();
   final _createFormKey = GlobalKey<FormState>();
-  late final FirebaseService _firebase;
+  late final BackendService _firebase;
 
   @override
   void initState() {
-    _firebase = context.read<FirebaseService>();
+    _firebase = context.read<BackendService>();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _joinController.dispose();
+    _createController.dispose();
+    super.dispose();
   }
 
   int _section = 0;

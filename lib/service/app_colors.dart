@@ -41,10 +41,13 @@ class Style {
   }
 
   static InputDecoration getInputDecoration(bool isOut,
-      {String hintText = "", bool isLabel = false, Widget? suffix}) {
+      {String hintText = "",
+      bool isLabel = false,
+      Widget? suffix,
+      bool isError = false}) {
     return InputDecoration(
-      enabledBorder: isOut ? _outBorder : null,
-      focusedBorder: isOut ? _outBorderF : null,
+      enabledBorder: isOut ? (isError ? _outEBorder : _outBorder) : null,
+      focusedBorder: isOut ? (isError ? _outEBorderF : _outBorderF) : null,
       errorBorder: isOut ? _outEBorder : null,
       focusedErrorBorder: isOut ? _outEBorderF : null,
       hintText: (!isLabel && hintText != "") ? hintText : null,

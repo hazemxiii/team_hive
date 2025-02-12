@@ -20,6 +20,12 @@ class _FabState extends State<Fab> with TickerProviderStateMixin {
   late final Animation _animation;
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     _animationController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 150));

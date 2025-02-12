@@ -22,13 +22,19 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   late final TextEditingController nameController;
-  late final FirebaseService _firebase;
+  late final BackendService _firebase;
 
   @override
   initState() {
     super.initState();
-    _firebase = context.read<FirebaseService>();
+    _firebase = context.read<BackendService>();
     nameController = TextEditingController(text: widget.quiz.name);
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
   }
 
   int _activeIndex = 0;
@@ -150,7 +156,6 @@ class _QuizPageState extends State<QuizPage> {
                 style: Style.headingStyle,
               ),
               if (widget.team.isOwner(_firebase.user)) _questionOptions(q),
-              // TODO: display written mark too
               if (!widget.team.isOwner(_firebase.user) &&
                   isCorrect != null &&
                   q is McqQuestion)
@@ -174,6 +179,7 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Widget _questionOptions(Question q) {
+    // TODO: dispose this
     TextEditingController markController =
         TextEditingController(text: q.totalMark.toString());
     return Row(

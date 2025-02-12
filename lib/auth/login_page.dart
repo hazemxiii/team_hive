@@ -38,7 +38,7 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(
                   height: 20,
                 ),
-                _googleSignInBtn(),
+                _googleSignInBtn(context),
                 const SizedBox(
                   height: 50,
                 ),
@@ -71,14 +71,14 @@ class LoginPage extends StatelessWidget {
     ];
   }
 
-  Widget _googleSignInBtn() {
+  Widget _googleSignInBtn(BuildContext context) {
     return MaterialButton(
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
         color: Style.back,
         shape: const RoundedRectangleBorder(
             side: BorderSide(color: Colors.grey),
             borderRadius: BorderRadius.all(Radius.circular(5))),
-        onPressed: _googleSignIn,
+        onPressed: () => _googleSignIn(context),
         elevation: 0,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -121,7 +121,14 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  void _googleSignIn() {}
+  void _googleSignIn(BuildContext context) async {
+    final backend = context.read<BackendService>();
+    String? s = await backend.googleSignIn();
+    if (s == null && context.mounted) {
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+    }
+  }
 }
 
 class FormWidget extends StatefulWidget {
@@ -131,11 +138,22 @@ class FormWidget extends StatefulWidget {
   State<FormWidget> createState() => _FormWidgetState();
 }
 
+enum LoggingInState { normal, loading, error }
+
 class _FormWidgetState extends State<FormWidget> {
   final _key = GlobalKey<FormState>();
   bool _isHidden = true;
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
+  LoggingInState _loginState = LoggingInState.normal;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -155,7 +173,8 @@ class _FormWidgetState extends State<FormWidget> {
             const SizedBox(
               height: 20,
             ),
-            _forgotPasswordBtn()
+            // TODO: implement forgot password
+            // _forgotPasswordBtn()
           ],
         ));
   }
@@ -165,8 +184,10 @@ class _FormWidgetState extends State<FormWidget> {
       controller: _emailController,
       cursorColor: Style.main,
       style: Style.textStyle,
-      decoration:
-          Style.getInputDecoration(true, hintText: "Email", isLabel: true),
+      decoration: Style.getInputDecoration(true,
+          hintText: "Email",
+          isLabel: true,
+          isError: _loginState == LoggingInState.error),
     );
   }
 
@@ -181,21 +202,25 @@ class _FormWidgetState extends State<FormWidget> {
           isLabel: true,
           suffix: IconButton(
               onPressed: _toggleVisibility,
-              icon: Icon(_isHidden ? Icons.visibility_off : Icons.visibility))),
+              icon: Icon(_isHidden ? Icons.visibility_off : Icons.visibility)),
+          isError: _loginState == LoggingInState.error),
     );
   }
 
   Widget _signInBtn() {
-    return MaterialButton(
-      padding: const EdgeInsets.all(15),
-      minWidth: double.infinity,
-      onPressed: _login,
-      color: Style.main,
-      child: Text(
-        "Sign In",
-        style: TextStyle(color: Style.back),
-      ),
-    );
+    return _loginState != LoggingInState.loading
+        ? MaterialButton(
+            padding: const EdgeInsets.all(15),
+            minWidth: double.infinity,
+            onPressed: _login,
+            color: Style.main,
+            child: Text(
+              "Sign In",
+              style: TextStyle(color: Style.back),
+            ))
+        : CircularProgressIndicator(
+            color: Style.sec,
+          );
   }
 
   Widget _forgotPasswordBtn() {
@@ -223,15 +248,24 @@ class _FormWidgetState extends State<FormWidget> {
   }
 
   Future<void> _login() async {
-    final f = context.read<FirebaseService>();
+    setState(() {
+      _loginState = LoggingInState.loading;
+    });
+    final f = context.read<BackendService>();
     String? s =
         await f.emailSignIn(_emailController.text, _passController.text);
 
     if (mounted) {
       if (!f.isLogged) {
+        setState(() {
+          _loginState = LoggingInState.error;
+        });
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(s ?? "Unkown Error")));
       } else {
+        setState(() {
+          _loginState = LoggingInState.normal;
+        });
         Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const HomePage()));
       }

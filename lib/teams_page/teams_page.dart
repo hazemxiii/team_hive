@@ -15,7 +15,7 @@ class TeamsPage extends StatefulWidget {
 }
 
 class _TeamsPageState extends State<TeamsPage> {
-  late final FirebaseService _firebase;
+  late final BackendService _firebase;
   List<Team> teams = [];
   final _teamsLoadingNotifier = ValueNotifier(false);
 

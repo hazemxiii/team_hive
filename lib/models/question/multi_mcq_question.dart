@@ -24,7 +24,7 @@ class MultiMcqQuestion implements McqQuestion {
     this.choices.addAll(choices);
     this.answer.addAll(answer);
   }
-
+// TODO: Date & duration for quiz
   @override
   bool isAnswered() => answer.isNotEmpty;
 
@@ -34,7 +34,7 @@ class MultiMcqQuestion implements McqQuestion {
         "text": text,
         "answer": answer,
         "mark": totalMark,
-        "correct": correctChoices,
+        // "correct": correctChoices,
         "type": 2
       };
 

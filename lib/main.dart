@@ -19,7 +19,7 @@ void main() async {
   runApp(MultiProvider(
     providers: [
       Provider(
-        create: (context) => FirebaseService(),
+        create: (context) => BackendService(),
       )
     ],
     child: const App(),
@@ -31,7 +31,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final firebase = context.read<FirebaseService>();
+    final firebase = context.read<BackendService>();
     return MaterialApp(
       theme: ThemeData(
           textSelectionTheme: TextSelectionThemeData(

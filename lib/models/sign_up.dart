@@ -19,6 +19,14 @@ class SignUp {
     image = null;
   }
 
+  static void dispose() {
+    email.dispose();
+    password.dispose();
+    confirmPassword.dispose();
+    fName.dispose();
+    lName.dispose();
+  }
+
   static bool _isValidEmail(String? email) {
     final emailRegex = RegExp(
       r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",

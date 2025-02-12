@@ -18,6 +18,7 @@ class WrittenQuestion implements Question {
   Map<String, dynamic> encode() =>
       {"text": text, "answer": answer, "mark": totalMark, "type": 0};
 
+  // TODO: implement isQuestionCorrect
   @override
   bool isQuestionCorrect() => true;
 

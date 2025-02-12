@@ -10,7 +10,7 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
         onPressed: () async {
-          await context.read<FirebaseService>().signOut();
+          await context.read<BackendService>().signOut();
           if (context.mounted) {
             Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginPage()),

@@ -33,7 +33,7 @@ class SingleMcqQuestion implements McqQuestion {
       "text": text,
       "answer": answer,
       "mark": totalMark,
-      "correct": correctAnswer,
+      // "correct": correctAnswer,
       "type": 1
     };
   }

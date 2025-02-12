@@ -15,14 +15,14 @@ class TeamPage extends StatefulWidget {
 }
 
 class _TeamPageState extends State<TeamPage> {
-  late final FirebaseService _firebase;
+  late final BackendService _firebase;
   late Map<String, List<IconData>> _icons;
   late List<Widget> _pages;
   int _activePageI = 2;
 
   @override
   void initState() {
-    _firebase = context.read<FirebaseService>();
+    _firebase = context.read<BackendService>();
     _icons = _drawerIcons();
     _pages = _pagesBuilder();
     super.initState();

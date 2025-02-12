@@ -9,7 +9,7 @@ class NameWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final FirebaseService firebase = context.read<FirebaseService>();
+    final BackendService firebase = context.read<BackendService>();
     return Text(
       (firebase.user.fName)[0],
       style: TextStyle(color: Style.back),

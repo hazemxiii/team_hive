@@ -115,7 +115,7 @@ class TeamsRowContainerWidget extends StatelessWidget {
                         Container(
                           width: 3,
                           height: 20,
-                          color: teams[i].color,
+                          color: Style.sec,
                         ),
                         const SizedBox(
                           width: 5,

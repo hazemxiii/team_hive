@@ -103,7 +103,8 @@ class SecondPage extends StatelessWidget {
             const SizedBox(
               height: 20,
             ),
-            const ImagePickerWidget()
+            // TODO: allow image picker after finding a storage provider
+            // const ImagePickerWidget()
           ],
         ));
   }
