@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/auth/login_page.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});

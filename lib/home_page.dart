@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:team_hive/coming_soon.dart';
+import 'package:team_hive/Profile_page.dart';
 import 'package:team_hive/nav_bars.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/settings_page.dart';
 import 'package:team_hive/teams_page/teams_page.dart';
 
 class ActivePage {
@@ -23,16 +22,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _pages = const [
-    ComingSoonPage(
-      title: "Profile",
-      isFullPage: false,
-    ),
+    ProfilePage(),
     TeamsPage(),
-    ComingSoonPage(
-      title: "Tasks",
-      isFullPage: false,
-    ),
-    SettingsPage()
+    // ComingSoonPage(
+    //   title: "Tasks",
+    //   isFullPage: false,
+    // ),
+    // SettingsPage()
   ];
   @override
   void initState() {

@@ -24,9 +24,26 @@ class MyUser {
     _teams = teams;
   }
 
+  void setName(String fName, String lName) {
+    _fName = fName;
+    _lName = lName;
+  }
+
   String get email => _email;
-  String get fName => _fName;
-  String get lName => _lName;
+  String get fName {
+    if (_fName == "") {
+      return ".";
+    }
+    return _fName;
+  }
+
+  String get lName {
+    if (_lName == "") {
+      return ".";
+    }
+    return _lName;
+  }
+
   String get uid => _uid;
   List<Team> get teams => _teams;
 }

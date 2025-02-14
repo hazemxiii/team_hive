@@ -19,6 +19,14 @@ class SignUp {
     image = null;
   }
 
+  static void init() {
+    email = TextEditingController();
+    password = TextEditingController();
+    confirmPassword = TextEditingController();
+    fName = TextEditingController();
+    lName = TextEditingController();
+  }
+
   static void dispose() {
     email.dispose();
     password.dispose();

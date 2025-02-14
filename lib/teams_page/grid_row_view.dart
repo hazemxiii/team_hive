@@ -33,6 +33,7 @@ class TeamsGridContainerWidget extends StatelessWidget {
                     color: Style.sec,
                   ),
                   Text(
+                    textAlign: TextAlign.center,
                     "Create/Join A Team",
                     style: TextStyle(
                       color: Style.sec,
@@ -110,26 +111,29 @@ class TeamsRowContainerWidget extends StatelessWidget {
             ),
             ...List.generate(
                 teams.length,
-                (i) => _rowContainer(Row(
-                      children: [
-                        Container(
-                          width: 3,
-                          height: 20,
-                          color: Style.sec,
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        Expanded(
-                          child: Text(
-                            teams[i].name,
-                            style: TextStyle(
-                                color: Style.main,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16),
+                (i) => _rowContainer(InkWell(
+                      onTap: () => goToTeam(teams[i]),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 3,
+                            height: 20,
+                            color: Style.sec,
                           ),
-                        )
-                      ],
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          Expanded(
+                            child: Text(
+                              teams[i].name,
+                              style: TextStyle(
+                                  color: Style.main,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16),
+                            ),
+                          )
+                        ],
+                      ),
                     )))
           ],
         ),

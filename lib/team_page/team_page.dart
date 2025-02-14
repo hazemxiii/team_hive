@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:team_hive/coming_soon.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/quizzes_page.dart';
 
 class TeamPage extends StatefulWidget {
@@ -35,6 +35,11 @@ class _TeamPageState extends State<TeamPage> {
       drawer: _drawer(),
       backgroundColor: Style.back,
       appBar: AppBar(
+        actions: [
+          IconButton(
+              onPressed: Navigator.of(context).pop,
+              icon: const Icon(Icons.arrow_back))
+        ],
         title: Text(widget.team.name),
         backgroundColor: Style.section,
         foregroundColor: Style.sec,

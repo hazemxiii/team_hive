@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/quiz_page/quiz_page.dart';
 
 class QuizzesPage extends StatefulWidget {

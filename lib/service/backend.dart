@@ -16,9 +16,9 @@ class RequestResponse {
 class BackendService {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  // final _serverUrl = "team-hive-api.vercel.app";
-  final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = false;
+  final _serverUrl = "team-hive-api.vercel.app";
+  // final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = true;
   late MyUser _currentUser;
 
   Future<RequestResponse> _makeRequest(String resource, String data) async {
@@ -54,8 +54,8 @@ class BackendService {
     _currentUser = MyUser(
         uid: _user!.uid,
         email: _user!.email ?? "",
-        fName: d["fName"] ?? "",
-        lName: d["lName"] ?? "",
+        fName: d["fName"] ?? ".",
+        lName: d["lName"] ?? ".",
         teams: await getTeamsNames());
   }
 
@@ -64,8 +64,9 @@ class BackendService {
     try {
       await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      await _createUserDoc(email, fName, lName);
-      await _auth.signOut();
+      await _user!.sendEmailVerification();
+      // await _createUserDoc(email, fName, lName);
+      // await _auth.signOut();
       return null;
     } on FirebaseAuthException catch (e) {
       debugPrint(e.message);
@@ -73,7 +74,7 @@ class BackendService {
     }
   }
 
-  Future<void> _createUserDoc(String email, String fName, String lName) async {
+  Future<void> createUserDoc(String email, String fName, String lName) async {
     if (_user != null) {
       DocumentReference d = _firestore.doc("users/${_user!.uid}");
       try {
@@ -86,9 +87,25 @@ class BackendService {
     }
   }
 
+  Future<bool> editDisplayName(String fName, String lName) async {
+    try {
+      DocumentReference userRef = _firestore.doc("users/${user.uid}");
+      await userRef.update({"fName": fName, "lName": lName});
+      return true;
+    } catch (e) {
+      debugPrint(e.toString());
+      return false;
+    }
+  }
+
   Future<String?> emailSignIn(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
+      // TODO: uncomment this on production
+      // if (!_user!.emailVerified) {
+      //   await signOut();
+      //   return "Please Verify Your Account To Sign In";
+      // }
       await getCurrentUserProfile();
       return null;
     } on FirebaseAuthException catch (e) {
@@ -96,35 +113,6 @@ class BackendService {
       return e.message;
     }
   }
-
-  // Future<String?> googleSignIn() async {
-  //   try {
-  //     final GoogleSignIn googleSignIn = GoogleSignIn(
-  //         clientId:
-  //             "203270850968-g81t4lpgoracph4ohmab5abpjmgul4ub.apps.googleusercontent.com");
-
-  //     final GoogleSignInAccount? googleUser =
-  //         await googleSignIn.signInSilently();
-  //     if (googleUser == null) return null; // User canceled sign-in
-
-  //     final GoogleSignInAuthentication googleAuth =
-  //         await googleUser.authentication;
-
-  //     final OAuthCredential credential = GoogleAuthProvider.credential(
-  //       accessToken: googleAuth.accessToken,
-  //       idToken: googleAuth.idToken,
-  //     );
-
-  //     await _auth.signInWithCredential(credential);
-  //     await _createUserDoc(googleUser.email, "no", "name");
-  //     await getCurrentUserProfile();
-
-  //     return null;
-  //   } catch (e) {
-  //     debugPrint("Error signing in: ${e.toString()}");
-  //     return e.toString();
-  //   }
-  // }
 
   Future<String?> googleSignIn() async {
     try {
@@ -135,7 +123,7 @@ class BackendService {
         return null;
       }
       List name = (_auth.currentUser!.displayName ?? "No Name").split(" ");
-      await _createUserDoc(_auth.currentUser!.email!,
+      await createUserDoc(_auth.currentUser!.email!,
           name.isNotEmpty ? name[0] : "No", name.length > 1 ? name[1] : "Name");
       await getCurrentUserProfile();
 
@@ -166,7 +154,6 @@ class BackendService {
     }
   }
 
-// TODO: rules
   Future<void> joinTeam(String teamCode) async {
     DocumentReference userRef = _firestore.doc("users/${user.uid}");
     DocumentSnapshot userDoc = await userRef.get();
@@ -206,7 +193,6 @@ class BackendService {
     return teams;
   }
 
-// TODO: rules
   Future<String?> createQuiz(Team t, Quiz q) async {
     Map<String, dynamic> quizEncoded = q.encode(true);
     Map<String, dynamic> answers = quizEncoded['answers'];
@@ -278,4 +264,11 @@ class BackendService {
   MyUser get user => _currentUser;
   bool get isLogged => _user != null;
   User? get _user => _auth.currentUser;
+  bool get isVerified {
+    if (_auth.currentUser == null) {
+      return false;
+    }
+    _auth.currentUser!.reload();
+    return _auth.currentUser!.emailVerified;
+  }
 }

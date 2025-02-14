@@ -12,6 +12,10 @@ class Style {
   static late OutlineInputBorder _outBorderF;
   static late OutlineInputBorder _outEBorder;
   static late OutlineInputBorder _outEBorderF;
+  static late UnderlineInputBorder _underBorder;
+  static late UnderlineInputBorder _underBorderF;
+  static late UnderlineInputBorder _underEBorder;
+  static late UnderlineInputBorder _underEBorderF;
   static late TextStyle _textStyle;
 
   static void initColors() {
@@ -25,6 +29,7 @@ class Style {
         color: Color.fromARGB(255, 154, 154, 154),
         fontSize: 14,
         fontWeight: FontWeight.bold);
+
     _outBorder = OutlineInputBorder(
         borderSide: BorderSide(color: Color.lerp(_main, _back, 0.5)!));
     _outBorderF = OutlineInputBorder(borderSide: BorderSide(color: _main));
@@ -32,6 +37,15 @@ class Style {
         const OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
     _outEBorderF =
         const OutlineInputBorder(borderSide: BorderSide(color: Colors.red));
+
+    _underBorder = UnderlineInputBorder(
+        borderSide: BorderSide(color: Color.lerp(_main, _back, 0.5)!));
+    _underBorderF = UnderlineInputBorder(borderSide: BorderSide(color: _main));
+    _underEBorder =
+        const UnderlineInputBorder(borderSide: BorderSide(color: Colors.red));
+    _underEBorderF =
+        const UnderlineInputBorder(borderSide: BorderSide(color: Colors.red));
+
     _textStyle = TextStyle(color: _main);
   }
 
@@ -46,10 +60,14 @@ class Style {
       Widget? suffix,
       bool isError = false}) {
     return InputDecoration(
-      enabledBorder: isOut ? (isError ? _outEBorder : _outBorder) : null,
-      focusedBorder: isOut ? (isError ? _outEBorderF : _outBorderF) : null,
-      errorBorder: isOut ? _outEBorder : null,
-      focusedErrorBorder: isOut ? _outEBorderF : null,
+      enabledBorder: isOut
+          ? (isError ? _outEBorder : _outBorder)
+          : (isError ? _underEBorder : _underBorder),
+      focusedBorder: isOut
+          ? (isError ? _outEBorderF : _outBorderF)
+          : (isError ? _underEBorderF : _underBorderF),
+      errorBorder: isOut ? _outEBorder : _underEBorder,
+      focusedErrorBorder: isOut ? _outEBorderF : _underEBorderF,
       hintText: (!isLabel && hintText != "") ? hintText : null,
       label: (isLabel && hintText != "")
           ? Text(

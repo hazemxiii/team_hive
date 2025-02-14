@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:team_hive/auth/sign_up/sign_up_page.dart';
 import 'package:team_hive/home_page.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});

@@ -4,7 +4,7 @@ import 'package:team_hive/auth/login_page.dart';
 import 'package:team_hive/home_page.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 import 'firebase_options.dart';
 /*
 https://www.figma.com/design/d4NRtX6iZtgDvjEW7tHr57/TeamHive?node-id=0-1&t=3OKBjxRjyCIDgUuK-1

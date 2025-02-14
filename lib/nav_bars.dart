@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/home_page.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 
 class NameWidget extends StatelessWidget {
   const NameWidget({super.key});
@@ -85,14 +85,14 @@ class _RailWidgetState extends State<RailWidget> {
                     selectedIcon: Icon(Icons.home),
                     icon: Icon(Icons.home_outlined),
                     label: Text("Home")),
-                const NavigationRailDestination(
-                    selectedIcon: Icon(Icons.book),
-                    icon: Icon(Icons.book_outlined),
-                    label: Text("Tasks")),
-                const NavigationRailDestination(
-                    selectedIcon: Icon(Icons.settings),
-                    icon: Icon(Icons.settings_outlined),
-                    label: Text("Settings"))
+                // const NavigationRailDestination(
+                //     selectedIcon: Icon(Icons.book),
+                //     icon: Icon(Icons.book_outlined),
+                //     label: Text("Tasks")),
+                // const NavigationRailDestination(
+                //     selectedIcon: Icon(Icons.settings),
+                //     icon: Icon(Icons.settings_outlined),
+                //     label: Text("Settings"))
               ],
               selectedIndex: v);
         });
@@ -114,6 +114,7 @@ class BottomNavBarWidget extends StatelessWidget {
         valueListenable: ActivePage.activePageI,
         builder: (context, v, _) {
           return BottomNavigationBar(
+            backgroundColor: Style.section,
             showSelectedLabels: false,
             showUnselectedLabels: false,
             onTap: (i) => ActivePage.setPage(i),
@@ -128,16 +129,16 @@ class BottomNavBarWidget extends StatelessWidget {
                     color: Style.sec,
                   ),
                   activeIcon: Icon(Icons.home, color: Style.sec)),
-              BottomNavigationBarItem(
-                  backgroundColor: Style.section,
-                  label: "Tasks",
-                  icon: Icon(Icons.book_outlined, color: Style.sec),
-                  activeIcon: Icon(Icons.book, color: Style.sec)),
-              BottomNavigationBarItem(
-                  backgroundColor: Style.section,
-                  label: "Settings",
-                  icon: Icon(Icons.settings_outlined, color: Style.sec),
-                  activeIcon: Icon(Icons.settings, color: Style.sec))
+              // BottomNavigationBarItem(
+              //     backgroundColor: Style.section,
+              //     label: "Tasks",
+              //     icon: Icon(Icons.book_outlined, color: Style.sec),
+              //     activeIcon: Icon(Icons.book, color: Style.sec)),
+              // BottomNavigationBarItem(
+              //     backgroundColor: Style.section,
+              //     label: "Settings",
+              //     icon: Icon(Icons.settings_outlined, color: Style.sec),
+              //     activeIcon: Icon(Icons.settings, color: Style.sec))
             ],
           );
         });

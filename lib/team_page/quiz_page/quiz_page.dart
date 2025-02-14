@@ -6,7 +6,7 @@ import 'package:team_hive/models/question/written_question.dart';
 import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/quiz_page/fab.dart';
 import 'package:team_hive/team_page/quiz_page/question_widgets.dart';
 

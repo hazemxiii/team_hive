@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:team_hive/loading_widget.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/team_page.dart';
 import 'package:team_hive/teams_page/grid_row_view.dart';
 import 'package:team_hive/teams_page/join_create_team_dialog.dart';
@@ -20,7 +21,7 @@ class _TeamsPageState extends State<TeamsPage> {
   final _teamsLoadingNotifier = ValueNotifier(false);
 
   @override
-  initState() {
+  void initState() {
     _firebase = context.read();
     super.initState();
   }
@@ -91,12 +92,14 @@ class _TeamsPageState extends State<TeamsPage> {
 
   void _goToTeam(Team team) async {
     if (team.quizzes.isEmpty) {
+      LoadingWidget.show(context);
       team.updateQuizzes(
           await _firebase.getQuizzesDisplayData(
               team.id, team.isOwner(_firebase.user)),
           false);
     }
     if (mounted) {
+      Navigator.pop(context);
       Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => TeamPage(
                 team: team,

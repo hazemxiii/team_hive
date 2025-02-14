@@ -1,9 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:team_hive/auth/sign_up/pages.dart';
+import 'package:team_hive/auth/sign_up/verify_wait.dart';
 import 'package:team_hive/models/sign_up.dart';
 import 'package:team_hive/service/app_colors.dart';
-import 'package:team_hive/service/firebase.dart';
+import 'package:team_hive/service/backend.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -14,6 +15,12 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final controller = PageController(initialPage: 0);
+
+  @override
+  void initState() {
+    SignUp.init();
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -154,6 +161,9 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _createAccount() async {
+    String email = SignUp.email.text;
+    String fName = SignUp.fName.text;
+    String lName = SignUp.lName.text;
     String? s = await BackendService().createEmailAccount(SignUp.email.text,
         SignUp.password.text, SignUp.fName.text, SignUp.lName.text);
 
@@ -162,7 +172,13 @@ class _SignUpPageState extends State<SignUpPage> {
           SnackBar(content: Text(s ?? "Account Created Successfully")));
       if (s == null) {
         SignUp.clear();
-        Navigator.of(context).pop();
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (_) => VerifyWaitPage(
+                  email: email,
+                  fName: fName,
+                  lName: lName,
+                )));
+        // Navigator.of(context).pop();
       }
     }
   }
