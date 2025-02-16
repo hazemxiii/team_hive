@@ -11,17 +11,19 @@ class ChoiceWidget extends StatefulWidget {
       required this.choice,
       required this.isLast,
       required this.isOwner,
-      required this.changeChoice,
+      required this.changeChoiceText,
       required this.addChoice,
       required this.question,
-      required this.isDisplay});
+      required this.isDisplay,
+      required this.onChoiceChanged});
   final String choice;
   final bool isLast;
   final bool isOwner;
   final bool isDisplay;
   final McqQuestion question;
-  final Function(String choice, String v) changeChoice;
+  final Function(String choice, String v) changeChoiceText;
   final Function(String v) addChoice;
+  final Function() onChoiceChanged;
 
   @override
   State<ChoiceWidget> createState() => _ChoiceWidgetState();
@@ -38,7 +40,7 @@ class _ChoiceWidgetState extends State<ChoiceWidget> {
       cursorColor: Style.main,
       enabled: widget.isOwner,
       onChanged: (v) => !widget.isLast
-          ? widget.changeChoice(widget.choice, v)
+          ? widget.changeChoiceText(widget.choice, v)
           : widget.addChoice(v),
       controller: _choiceController,
       decoration:
@@ -93,29 +95,31 @@ class _ChoiceWidgetState extends State<ChoiceWidget> {
 
   void _setSingleChoice(SingleMcqQuestion q, String? choice) {
     bool wasAnswered = q.answer != null;
-    setState(() {
-      q.answer = choice;
-      if (!wasAnswered) {
-        QuizPage.answeredCountNot.value++;
-      }
-    });
+    // setState(() {
+    // });
+    q.answer = choice;
+    if (!wasAnswered) {
+      QuizPage.answeredCountNot.value++;
+    }
+    widget.onChoiceChanged();
   }
 
   void _setMultiChoice(MultiMcqQuestion q, String choice) {
     bool wasAnswered = q.answer.isNotEmpty;
-    setState(() {
-      if (q.answer.contains(choice)) {
-        q.answer.remove(choice);
-        if (q.answer.isEmpty && wasAnswered) {
-          QuizPage.answeredCountNot.value--;
-        }
-      } else {
-        q.answer.add(choice);
-        if (!wasAnswered) {
-          QuizPage.answeredCountNot.value++;
-        }
+    // setState(() {
+    // });
+    if (q.answer.contains(choice)) {
+      q.answer.remove(choice);
+      if (q.answer.isEmpty && wasAnswered) {
+        QuizPage.answeredCountNot.value--;
       }
-    });
+    } else {
+      q.answer.add(choice);
+      if (!wasAnswered) {
+        QuizPage.answeredCountNot.value++;
+      }
+    }
+    widget.onChoiceChanged();
   }
 
   Color _getChoiceActiveColor(String choice) {

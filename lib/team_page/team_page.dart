@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/coming_soon.dart';
+import 'package:team_hive/home_page.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
@@ -30,15 +31,16 @@ class _TeamPageState extends State<TeamPage> {
 
   @override
   Widget build(BuildContext context) {
-    _firebase.getToken();
     return Scaffold(
       drawer: _drawer(),
       backgroundColor: Style.back,
       appBar: AppBar(
         actions: [
           IconButton(
-              onPressed: Navigator.of(context).pop,
-              icon: const Icon(Icons.arrow_back))
+              onPressed: () => Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const HomePage()),
+                  (_) => false),
+              icon: const Icon(Icons.home_outlined))
         ],
         title: Text(widget.team.name),
         backgroundColor: Style.section,

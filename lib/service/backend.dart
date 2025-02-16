@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_hive/models/quiz.dart';
@@ -15,13 +14,15 @@ class RequestResponse {
 
 class BackendService {
   final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
-  final _serverUrl = "team-hive-api.vercel.app";
-  // final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = true;
-  late MyUser _currentUser;
+  // final _firestore = FirebaseFirestore.instance;
+  // TODO: user the real server on production
+  // final _serverUrl = "team-hive-api.vercel.app";
+  final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = false;
+  MyUser? _currentUser;
 
-  Future<RequestResponse> _makeRequest(String resource, String data) async {
+  Future<RequestResponse> _makeRequest(String resource, Map data) async {
+    data['token'] = await _user!.getIdToken();
     try {
       Uri? url;
       if (_secure) {
@@ -30,7 +31,8 @@ class BackendService {
         url = Uri.http(_serverUrl, resource);
       }
       var r = await http.post(url,
-          headers: {"Content-Type": "application/json"}, body: data);
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(data));
       if (r.statusCode != 200) {
         return RequestResponse(ok: false, r: "Failed to reach the server");
       }
@@ -45,18 +47,17 @@ class BackendService {
     if (_user == null) {
       return;
     }
-    Map<String, dynamic> d = {};
-    try {
-      d = (await _firestore.doc("users/${_user!.uid}").get()).data() ?? {};
-    } catch (e) {
-      debugPrint("Error getting user data: $e");
+
+    RequestResponse r = await _makeRequest("user", {"uid": _user!.uid});
+    if (r.ok) {
+      Map d = jsonDecode(r.r);
+      _currentUser = MyUser(
+          uid: _user!.uid,
+          email: _user!.email ?? "",
+          fName: d["fName"] ?? ".",
+          lName: d["lName"] ?? ".",
+          teams: await getTeamsNames());
     }
-    _currentUser = MyUser(
-        uid: _user!.uid,
-        email: _user!.email ?? "",
-        fName: d["fName"] ?? ".",
-        lName: d["lName"] ?? ".",
-        teams: await getTeamsNames());
   }
 
   Future<String?> createEmailAccount(
@@ -74,38 +75,38 @@ class BackendService {
     }
   }
 
-  Future<void> createUserDoc(String email, String fName, String lName) async {
+  Future<void> createUserDoc(String fName, String lName) async {
     if (_user != null) {
-      DocumentReference d = _firestore.doc("users/${_user!.uid}");
-      try {
-        if (!(await d.get()).exists) {
-          await d.set({"email": email, "fName": fName, "lName": lName});
-        }
-      } catch (e) {
-        debugPrint(e.toString());
-      }
+      await _makeRequest("user/create", {"fName": fName, "lName": lName});
     }
   }
 
   Future<bool> editDisplayName(String fName, String lName) async {
-    try {
-      DocumentReference userRef = _firestore.doc("users/${user.uid}");
-      await userRef.update({"fName": fName, "lName": lName});
-      return true;
-    } catch (e) {
-      debugPrint(e.toString());
-      return false;
+    RequestResponse r =
+        await _makeRequest("user/updatename", {"fName": fName, "lName": lName});
+    if (r.ok) {
+      if (r.r == "ok") {
+        return true;
+      }
     }
+    return false;
+    // try {
+    //   DocumentReference userRef = _firestore.doc("users/${user.uid}");
+    //   await userRef.update({"fName": fName, "lName": lName});
+    //   return true;
+    // } catch (e) {
+    //   debugPrint(e.toString());
+    //   return false;
+    // }
   }
 
   Future<String?> emailSignIn(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
-      // TODO: uncomment this on production
-      // if (!_user!.emailVerified) {
-      //   await signOut();
-      //   return "Please Verify Your Account To Sign In";
-      // }
+      if (!_user!.emailVerified) {
+        await signOut();
+        return "Please Verify Your Account To Sign In";
+      }
       await getCurrentUserProfile();
       return null;
     } on FirebaseAuthException catch (e) {
@@ -123,7 +124,7 @@ class BackendService {
         return null;
       }
       List name = (_auth.currentUser!.displayName ?? "No Name").split(" ");
-      await createUserDoc(_auth.currentUser!.email!,
+      await createUserDoc(
           name.isNotEmpty ? name[0] : "No", name.length > 1 ? name[1] : "Name");
       await getCurrentUserProfile();
 
@@ -138,39 +139,40 @@ class BackendService {
     await _auth.signOut();
   }
 
-  Future<bool> createTeam(String teamName) async {
-    try {
-      await _firestore.runTransaction((transaction) async {
-        DocumentReference teamDoc = _firestore.collection("teams").doc();
-        DocumentReference ownerDoc = _firestore.doc("users/${user.uid}");
-        transaction.set(teamDoc, {"name": teamName, "owner": user.uid});
-        transaction.update(ownerDoc, {
-          "teams": [..._currentUser.teams.map((e) => e.id), teamDoc.id]
-        });
-      });
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
+  // TODO: leave this commented until the time comes
+  // Future<bool> createTeam(String teamName) async {
+  //   try {
+  //     await _firestore.runTransaction((transaction) async {
+  //       DocumentReference teamDoc = _firestore.collection("teams").doc();
+  //       DocumentReference ownerDoc = _firestore.doc("users/${user.uid}");
+  //       transaction.set(teamDoc, {"name": teamName, "owner": user.uid});
+  //       transaction.update(ownerDoc, {
+  //         "teams": [..._currentUser.teams.map((e) => e.id), teamDoc.id]
+  //       });
+  //     });
+  //     return true;
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // }
 
   Future<void> joinTeam(String teamCode) async {
-    DocumentReference userRef = _firestore.doc("users/${user.uid}");
-    DocumentSnapshot userDoc = await userRef.get();
-    List teamsIds = [];
-    try {
-      teamsIds = userDoc.get("teams");
-      teamsIds.add(teamCode);
-      await userRef.update({"teams": teamsIds});
-    } catch (e) {
-      debugPrint("Error getting teams: ${e.toString()}");
-    }
+    await _makeRequest("team/join", {"team": teamCode});
+    // DocumentReference userRef = _firestore.doc("users/${user.uid}");
+    // DocumentSnapshot userDoc = await userRef.get();
+    // List teamsIds = [];
+    // try {
+    //   teamsIds = userDoc.get("teams");
+    //   teamsIds.add(teamCode);
+    //   await userRef.update({"teams": teamsIds});
+    // } catch (e) {
+    //   debugPrint("Error getting teams: ${e.toString()}");
+    // }
   }
 
   Future<List<Team>> getTeamsNames() async {
     List<Team> teams = [];
-    RequestResponse r =
-        await _makeRequest("teams", jsonEncode({"token": await getToken()}));
+    RequestResponse r = await _makeRequest("teams", {});
 
     if (r.ok) {
       Map data = {};
@@ -194,35 +196,35 @@ class BackendService {
   }
 
   Future<String?> createQuiz(Team t, Quiz q) async {
+    /// Returns an error as a nullable string
     Map<String, dynamic> quizEncoded = q.encode(true);
     Map<String, dynamic> answers = quizEncoded['answers'];
     quizEncoded.remove("answers");
     quizEncoded.remove("name");
     quizEncoded.remove("grade");
-    try {
-      DocumentReference quizDoc =
-          _firestore.doc("teams/${t.id}/quizzes/${q.name}");
-      DocumentReference quizAnsDoc =
-          _firestore.doc("teams/${t.id}/quizzesAnswers/${q.name}");
-      await _firestore.runTransaction((tr) async {
-        tr.set(quizDoc, quizEncoded);
-        tr.set(quizAnsDoc, answers);
-      });
-    } catch (e) {
-      debugPrint(e.toString());
-      return e.toString();
+    RequestResponse r = await _makeRequest("quiz/create", {
+      "name": q.name,
+      "data": quizEncoded,
+      "answers": answers,
+      "team": t.id
+    });
+    if (r.ok) {
+      t.updateQuizzes([q], true);
+      return r.r == "ok" ? null : "Error";
     }
     return null;
   }
 
   Future<Quiz?> getQuizData(String teamId, String quizName) async {
-    Map data = {"token": await getToken(), "team": teamId, "quiz": quizName};
-    RequestResponse r = await _makeRequest("quiz", jsonEncode(data));
-    Map response = jsonDecode(r.r);
+    Map data = {"team": teamId, "quiz": quizName};
+    RequestResponse r = await _makeRequest("quiz", data);
     if (r.ok) {
+      Map response = jsonDecode(r.r);
       Map<String, dynamic> quizEncoded = response['quiz'];
       quizEncoded['name'] = quizName;
-      quizEncoded['answers'] = response['userAnswers'];
+      if (quizEncoded.containsKey("userAnswers")) {
+        quizEncoded['answers'] = response['userAnswers']['answers'] ?? {};
+      }
       quizEncoded['correct'] = response['correctAnswers'];
       return Quiz.decode(quizEncoded);
     }
@@ -231,8 +233,8 @@ class BackendService {
 
   Future<List<Quiz>> getQuizzesDisplayData(String teamId, bool isOwner) async {
     List<Quiz> quizzes = [];
-    Map data = {"isOwner": isOwner, "team": teamId, "token": await getToken()};
-    RequestResponse r = await _makeRequest("quizzes", jsonEncode(data));
+    Map data = {"isOwner": isOwner, "team": teamId};
+    RequestResponse r = await _makeRequest("quizzes", data);
     if (r.ok) {
       List response = jsonDecode(r.r);
       for (var quiz in response) {
@@ -242,26 +244,31 @@ class BackendService {
     return quizzes;
   }
 
-  Future<void> submitQuiz(Quiz q, Team t) async {
+  Future<String?> submitQuiz(Quiz q, Team t) async {
     Map<String, dynamic> data = q.encode(false)['answers'];
-    data['token'] = await getToken();
     data['quiz'] = q.name;
     data['team'] = t.id;
-    var url = Uri.http("127.0.0.1:5000", "quiz/submit");
-    await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode(data),
-    );
+    RequestResponse r = await _makeRequest("quiz/submit", data);
+    if (r.ok) {
+      if (r.r != "Failed") {
+        return null;
+      }
+    }
+    return "Failed To Submit Exam";
   }
 
   Future<String?> getToken() async {
     return await _auth.currentUser!.getIdToken();
   }
 
-  MyUser get user => _currentUser;
+  MyUser get user {
+    if (_currentUser == null) {
+      _auth.signOut();
+      return MyUser(email: "email", fName: "no", lName: "user", teams: []);
+    }
+    return _currentUser!;
+  }
+
   bool get isLogged => _user != null;
   User? get _user => _auth.currentUser;
   bool get isVerified {

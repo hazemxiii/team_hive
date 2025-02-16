@@ -9,7 +9,9 @@ import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/quiz_page/fab.dart';
 import 'package:team_hive/team_page/quiz_page/question_widgets.dart';
+import 'package:team_hive/team_page/team_page.dart';
 
+// TODO: put show answer in the db
 class QuizPage extends StatefulWidget {
   final Team team;
   final Quiz quiz;
@@ -318,26 +320,60 @@ class _QuizPageState extends State<QuizPage> {
 
   void _sendQuiz() async {
     bool isOwner = widget.team.isOwner(_firebase.user);
-    if (isOwner) {
-      _createQuiz();
-    } else {
-      _submitQuiz();
+    String? error;
+    bool? confirm = await _showQuizSubmitConfirmDialog();
+    if (!(confirm ?? false)) {
+      return;
     }
-  }
+    if (isOwner) {
+      error = await _createQuiz();
+    } else {
+      error = await _submitQuiz();
+    }
 
-  void _createQuiz() async {
-    String? v = widget.quiz.validateQuiz();
-    if (v != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(v)));
+    if (error != null && mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
     } else {
       String? error = await _firebase.createQuiz(widget.team, widget.quiz);
       if (error == null && mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => TeamPage(team: widget.team)),
+            (_) => false);
       }
     }
   }
 
-  void _submitQuiz() async {
-    _firebase.submitQuiz(widget.quiz, widget.team);
+  Future<String?> _createQuiz() async {
+    return widget.quiz.validateQuiz();
+  }
+
+  Future<String?> _submitQuiz() async {
+    return await _firebase.submitQuiz(widget.quiz, widget.team);
+  }
+
+  Future<bool?> _showQuizSubmitConfirmDialog() async {
+    return await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              content: Text(
+                "Are you sure to submit the quiz?",
+                style: TextStyle(color: Style.main),
+              ),
+              actions: [
+                TextButton(
+                    onPressed: Navigator.of(context).pop,
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(color: Style.main),
+                    )),
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(
+                      "Save",
+                      style: TextStyle(color: Style.sec),
+                    )),
+              ],
+            ));
   }
 }

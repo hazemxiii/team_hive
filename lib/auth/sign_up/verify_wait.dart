@@ -23,15 +23,13 @@ class VerifyWaitPage extends StatefulWidget {
 class _VerifyWaitPageState extends State<VerifyWaitPage> {
   late Timer timer;
   late final BackendService _backend;
-// TODO: test teams page
-// TODO: test google sign in with verification (if needed)
   @override
   void initState() {
     _backend = context.read<BackendService>();
     timer = Timer.periodic(const Duration(seconds: 1), (t) async {
       if (_backend.isVerified) {
         t.cancel();
-        await _backend.createUserDoc(widget.email, widget.fName, widget.lName);
+        await _backend.createUserDoc(widget.fName, widget.lName);
         await _backend.getCurrentUserProfile();
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(

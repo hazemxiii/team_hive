@@ -145,7 +145,7 @@ class QuizWidget extends StatelessWidget {
       child: Text(
           style: TextStyle(
               color: Style.main, fontWeight: FontWeight.bold, fontSize: 12),
-          "Grade: $grade"),
+          "Grade: ${grade == -1 ? "Hidden" : grade}"),
     );
   }
 

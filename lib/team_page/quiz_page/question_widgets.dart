@@ -61,10 +61,13 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
                 choice: choice,
                 isLast: false,
                 isOwner: widget.isOwner,
-                changeChoice: _changeChoice,
+                changeChoiceText: _changeChoice,
                 addChoice: _addChoice,
                 question: widget.question,
                 isDisplay: widget.isDisplay,
+                onChoiceChanged: () {
+                  setState(() {});
+                },
               );
             }),
             if (widget.isOwner)
@@ -72,10 +75,13 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
                 choice: "",
                 isLast: true,
                 isOwner: widget.isOwner,
-                changeChoice: _changeChoice,
+                changeChoiceText: _changeChoice,
                 addChoice: _addChoice,
                 question: widget.question,
                 isDisplay: widget.isDisplay,
+                onChoiceChanged: () {
+                  setState(() {});
+                },
               )
             // if (widget.isOwner) _choiceWidget("", true)
           ],

@@ -223,6 +223,7 @@ class _FormWidgetState extends State<FormWidget> {
           );
   }
 
+  // ignore: unused_element
   Widget _forgotPasswordBtn() {
     return MaterialButton(
       elevation: 0,
