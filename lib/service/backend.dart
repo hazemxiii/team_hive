@@ -198,6 +198,7 @@ class BackendService {
   Future<String?> createQuiz(Team t, Quiz q) async {
     /// Returns an error as a nullable string
     Map<String, dynamic> quizEncoded = q.encode(true);
+    quizEncoded['showAnswers'] = false;
     Map<String, dynamic> answers = quizEncoded['answers'];
     quizEncoded.remove("answers");
     quizEncoded.remove("name");
