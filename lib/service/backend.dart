@@ -15,10 +15,9 @@ class RequestResponse {
 class BackendService {
   final _auth = FirebaseAuth.instance;
   // final _firestore = FirebaseFirestore.instance;
-  // TODO: user the real server on production
-  // final _serverUrl = "team-hive-api.vercel.app";
-  final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = false;
+  final _serverUrl = "team-hive-api.vercel.app";
+  // final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = true;
   MyUser? _currentUser;
 
   Future<RequestResponse> _makeRequest(String resource, Map data) async {
@@ -223,7 +222,7 @@ class BackendService {
       Map response = jsonDecode(r.r);
       Map<String, dynamic> quizEncoded = response['quiz'];
       quizEncoded['name'] = quizName;
-      if (quizEncoded.containsKey("userAnswers")) {
+      if (response.containsKey("userAnswers")) {
         quizEncoded['answers'] = response['userAnswers']['answers'] ?? {};
       }
       quizEncoded['correct'] = response['correctAnswers'];

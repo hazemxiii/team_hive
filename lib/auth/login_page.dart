@@ -38,7 +38,7 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(
                   height: 20,
                 ),
-                _googleSignInBtn(context),
+                const GoogleSignInBtn(),
                 const SizedBox(
                   height: 50,
                 ),
@@ -125,6 +125,65 @@ class LoginPage extends StatelessWidget {
     final backend = context.read<BackendService>();
     String? s = await backend.googleSignIn();
     if (s == null && context.mounted) {
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+    }
+  }
+}
+
+class GoogleSignInBtn extends StatefulWidget {
+  const GoogleSignInBtn({super.key});
+
+  @override
+  State<GoogleSignInBtn> createState() => _GoogleSignInBtnState();
+}
+
+class _GoogleSignInBtnState extends State<GoogleSignInBtn> {
+  bool _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return CircularProgressIndicator(
+        color: Style.sec,
+      );
+    }
+    return MaterialButton(
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+        color: Style.back,
+        shape: const RoundedRectangleBorder(
+            side: BorderSide(color: Colors.grey),
+            borderRadius: BorderRadius.all(Radius.circular(5))),
+        onPressed: () => _googleSignIn(),
+        elevation: 0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              "images/google.png",
+              width: 15,
+            ),
+            const VerticalDivider(
+              width: 5,
+            ),
+            Text(
+              "Google",
+              style: TextStyle(color: Style.main, fontWeight: FontWeight.bold),
+            )
+          ],
+        ));
+  }
+
+  void _googleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final backend = context.read<BackendService>();
+    String? s = await backend.googleSignIn();
+    setState(() {
+      _isLoading = false;
+    });
+    if (s == null && mounted) {
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
     }

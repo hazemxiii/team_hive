@@ -9,17 +9,20 @@ class Quiz {
   DateTime? _startDate;
   DateTime? _deadline;
   final List<Question> _questions = [];
+  bool? _answersShown;
 
   Quiz(
       {required String name,
       double? grade,
       DateTime? startDate,
       DateTime? deadline,
+      bool? answersShown,
       List<Question> questions = const []}) {
     _name = name;
     _grade = grade;
     _startDate = startDate;
     _deadline = deadline;
+    _answersShown = answersShown;
     _questions.addAll(questions);
   }
 
@@ -28,6 +31,7 @@ class Quiz {
     _grade = q.grade;
     _startDate = q.startDate;
     _deadline = q.deadline;
+    _answersShown = q.answersShown;
     _questions.clear();
     _questions.addAll(q.questions);
   }
@@ -118,6 +122,7 @@ class Quiz {
     return Quiz(
         name: encoded['name'],
         grade: encoded['grade'],
+        answersShown: encoded['showAnswers'],
         startDate: encoded["startDate"]?.toDate(),
         deadline: encoded['deadline']?.toDate(),
         questions: questions);
@@ -127,5 +132,6 @@ class Quiz {
   double? get grade => _grade;
   DateTime? get startDate => _startDate;
   DateTime? get deadline => _deadline;
+  bool get answersShown => _answersShown ?? false;
   List<Question> get questions => _questions;
 }

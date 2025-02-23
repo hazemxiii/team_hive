@@ -287,7 +287,9 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   bool _isDisplayOnly() {
-    if (widget.quiz.grade == null && widget.quiz.getQuizState() != 2) {
+    if (widget.quiz.grade == null &&
+        widget.quiz.getQuizState() != 2 &&
+        !widget.quiz.answersShown) {
       return false;
     }
     return true;
@@ -329,6 +331,9 @@ class _QuizPageState extends State<QuizPage> {
       error = await _createQuiz();
     } else {
       error = await _submitQuiz();
+      if (error == null) {
+        widget.quiz.setGrade(-1);
+      }
     }
 
     if (error != null && mounted) {

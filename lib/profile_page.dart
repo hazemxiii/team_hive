@@ -1,5 +1,7 @@
 // ignore_for_file: file_names
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/auth/login_page.dart';
@@ -29,7 +31,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
           color: Style.section,
           borderRadius: const BorderRadius.all(Radius.circular(5))),
-      constraints: const BoxConstraints(maxWidth: 400),
+      width: min(MediaQuery.sizeOf(context).width - 30, 300),
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
