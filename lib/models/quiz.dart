@@ -2,6 +2,7 @@ import 'package:team_hive/models/question/mcq_question.dart';
 import 'package:team_hive/models/question/multi_mcq_question.dart';
 import 'package:team_hive/models/question/question.dart';
 import 'package:team_hive/models/question/single_mcq_question.dart';
+import 'package:team_hive/models/user.dart';
 
 class Quiz {
   late String _name;
@@ -9,6 +10,7 @@ class Quiz {
   DateTime? _startDate;
   DateTime? _deadline;
   final List<Question> _questions = [];
+  Map<MyUser, double> _studentsGrades = {};
   bool? _answersShown;
 
   Quiz(
@@ -17,11 +19,13 @@ class Quiz {
       DateTime? startDate,
       DateTime? deadline,
       bool? answersShown,
+      Map<MyUser, double>? studentsGrades,
       List<Question> questions = const []}) {
     _name = name;
     _grade = grade;
     _startDate = startDate;
     _deadline = deadline;
+    _studentsGrades = studentsGrades ?? {};
     _answersShown = answersShown;
     _questions.addAll(questions);
   }
@@ -125,6 +129,7 @@ class Quiz {
         answersShown: encoded['showAnswers'],
         startDate: encoded["startDate"]?.toDate(),
         deadline: encoded['deadline']?.toDate(),
+        studentsGrades: encoded['studentsGrades'],
         questions: questions);
   }
 
@@ -134,4 +139,12 @@ class Quiz {
   DateTime? get deadline => _deadline;
   bool get answersShown => _answersShown ?? false;
   List<Question> get questions => _questions;
+  Map<MyUser, double> get studentsGrades => _studentsGrades;
+  double get totalGrade {
+    double g = 0;
+    for (Question q in _questions) {
+      g += q.totalMark;
+    }
+    return g;
+  }
 }

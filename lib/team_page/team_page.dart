@@ -5,7 +5,7 @@ import 'package:team_hive/home_page.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
-import 'package:team_hive/team_page/quizzes_page.dart';
+import 'package:team_hive/team_page/quizzes_page/quizzes_page.dart';
 
 class TeamPage extends StatefulWidget {
   final Team team;

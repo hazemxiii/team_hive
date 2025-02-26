@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
+import 'package:team_hive/models/user.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/quiz_page/quiz_page.dart';
+import 'package:team_hive/team_page/quizzes_page/responses_dialog.dart';
 
 class QuizzesPage extends StatefulWidget {
   final Team team;
@@ -96,6 +98,7 @@ class QuizWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backend = context.read<BackendService>();
     int status = quiz.getQuizState();
     return InkWell(
       onTap: () => goToQuiz(context, team, quiz, true),
@@ -120,6 +123,7 @@ class QuizWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                if (team.isOwner(backend.user)) _contextMenu(),
                 if (quiz.grade != null) _gradeWidget(quiz.grade!)
               ],
             ),
@@ -134,6 +138,28 @@ class QuizWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _contextMenu() {
+    return PopupMenuButton(
+        color: Style.sec,
+        itemBuilder: (context) {
+          return [
+            PopupMenuItem(
+                onTap: () => _showResponses(context),
+                child: Text(
+                  "Show Responses",
+                  style: TextStyle(color: Style.back),
+                )),
+            PopupMenuItem(
+                // TODO: implement this
+                onTap: null,
+                child: Text(
+                  quiz.answersShown ? "Hide Answers" : "Show Answers",
+                  style: TextStyle(color: Style.back),
+                ))
+          ];
+        });
   }
 
   Widget _gradeWidget(double grade) {
@@ -210,5 +236,17 @@ class QuizWidget extends StatelessWidget {
   String _formattedDate(DateTime date) {
     TimeOfDay time = TimeOfDay.fromDateTime(date);
     return "${date.day.toString().padLeft(2, "0")}/${date.month.toString().padLeft(2, "0")}/${date.year} ${time.hourOfPeriod}:${time.minute.toString().padLeft(2, "0")} ${time.period == DayPeriod.am ? "AM" : "PM"}";
+  }
+
+  void _showResponses(BuildContext context) {
+    // TODO: get this from db
+    showDialog(
+        context: context,
+        builder: (_) => ResponsesDialog(responses: {
+              MyUser(
+                  email: "email2", fName: "fName", lName: "lName", teams: []): 2
+            }, noResponse: [
+              MyUser(email: "email3", fName: "fName", lName: "lName", teams: [])
+            ], quiz: quiz));
   }
 }

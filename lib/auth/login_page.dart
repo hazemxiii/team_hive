@@ -71,34 +71,6 @@ class LoginPage extends StatelessWidget {
     ];
   }
 
-  Widget _googleSignInBtn(BuildContext context) {
-    return MaterialButton(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-        color: Style.back,
-        shape: const RoundedRectangleBorder(
-            side: BorderSide(color: Colors.grey),
-            borderRadius: BorderRadius.all(Radius.circular(5))),
-        onPressed: () => _googleSignIn(context),
-        elevation: 0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              "images/google.png",
-              width: 15,
-            ),
-            const VerticalDivider(
-              width: 5,
-            ),
-            Text(
-              "Google",
-              style: TextStyle(color: Style.main, fontWeight: FontWeight.bold),
-            )
-          ],
-        ));
-  }
-
   Widget _noAccountWidget(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -119,15 +91,6 @@ class LoginPage extends StatelessWidget {
             ))
       ],
     );
-  }
-
-  void _googleSignIn(BuildContext context) async {
-    final backend = context.read<BackendService>();
-    String? s = await backend.googleSignIn();
-    if (s == null && context.mounted) {
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
-    }
   }
 }
 
