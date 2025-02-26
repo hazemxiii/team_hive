@@ -43,17 +43,15 @@ class _McqQuestionWidgetState extends State<McqQuestionWidget> {
       children: [
         Container(
           margin: const EdgeInsets.symmetric(vertical: 10),
-          child: Expanded(
-            child: TextField(
-              maxLines: null,
-              enabled: widget.isOwner,
-              decoration: const InputDecoration(
-                  border: InputBorder.none, hintText: "Question"),
-              cursorColor: Style.main,
-              controller: _controller,
-              onChanged: (v) => widget.question.text = v,
-              style: TextStyle(color: Style.main, fontWeight: FontWeight.bold),
-            ),
+          child: TextField(
+            maxLines: null,
+            enabled: widget.isOwner,
+            decoration: const InputDecoration(
+                border: InputBorder.none, hintText: "Question"),
+            cursorColor: Style.main,
+            controller: _controller,
+            onChanged: (v) => widget.question.text = v,
+            style: TextStyle(color: Style.main, fontWeight: FontWeight.bold),
           ),
         ),
         Column(
