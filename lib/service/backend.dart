@@ -15,9 +15,9 @@ class RequestResponse {
 class BackendService {
   final _auth = FirebaseAuth.instance;
   // final _firestore = FirebaseFirestore.instance;
-  final _serverUrl = "team-hive-api.vercel.app";
-  // final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = true;
+  // final _serverUrl = "team-hive-api.vercel.app";
+  final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = false;
   MyUser? _currentUser;
 
   Future<RequestResponse> _makeRequest(String resource, Map data) async {
@@ -157,16 +157,6 @@ class BackendService {
 
   Future<void> joinTeam(String teamCode) async {
     await _makeRequest("team/join", {"team": teamCode});
-    // DocumentReference userRef = _firestore.doc("users/${user.uid}");
-    // DocumentSnapshot userDoc = await userRef.get();
-    // List teamsIds = [];
-    // try {
-    //   teamsIds = userDoc.get("teams");
-    //   teamsIds.add(teamCode);
-    //   await userRef.update({"teams": teamsIds});
-    // } catch (e) {
-    //   debugPrint("Error getting teams: ${e.toString()}");
-    // }
   }
 
   Future<List<Team>> getTeamsNames() async {
@@ -255,6 +245,41 @@ class BackendService {
       }
     }
     return "Failed To Submit Exam";
+  }
+
+  Future<Map?> getQuizResponses(String q, String t) async {
+    RequestResponse r =
+        await _makeRequest("quiz/responses", {"team": t, "quiz": q});
+
+    Map<MyUser, double> responses = {};
+    List<MyUser> noAnswer = [];
+
+    if (r.ok) {
+      Map data = {};
+      try {
+        data = jsonDecode(r.r);
+        Map responsesR = data['responses'];
+        Map noAnswerR = data['noAnswer'];
+        for (var id in responsesR.keys) {
+          responses[_parseUserFromResponse(responsesR[id])] =
+              responsesR[id]['grade'];
+        }
+        for (var id in noAnswerR.keys) {
+          noAnswer.add(_parseUserFromResponse(noAnswerR[id]));
+        }
+        return {"responses": responses, "noAnswer": noAnswer};
+      } catch (e) {
+        debugPrint("Failed to get responses: ${e.toString()}");
+        return null;
+      }
+    }
+    debugPrint("Failed to get responses");
+    return null;
+  }
+
+  MyUser _parseUserFromResponse(Map r) {
+    return MyUser(
+        email: r['email'], fName: r['fName'], lName: r['lName'], teams: []);
   }
 
   Future<String?> getToken() async {

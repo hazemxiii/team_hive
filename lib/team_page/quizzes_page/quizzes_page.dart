@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
-import 'package:team_hive/models/user.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/quiz_page/quiz_page.dart';
@@ -238,15 +237,22 @@ class QuizWidget extends StatelessWidget {
     return "${date.day.toString().padLeft(2, "0")}/${date.month.toString().padLeft(2, "0")}/${date.year} ${time.hourOfPeriod}:${time.minute.toString().padLeft(2, "0")} ${time.period == DayPeriod.am ? "AM" : "PM"}";
   }
 
-  void _showResponses(BuildContext context) {
-    // TODO: get this from db
-    showDialog(
-        context: context,
-        builder: (_) => ResponsesDialog(responses: {
-              MyUser(
-                  email: "email2", fName: "fName", lName: "lName", teams: []): 2
-            }, noResponse: [
-              MyUser(email: "email3", fName: "fName", lName: "lName", teams: [])
-            ], quiz: quiz));
+  void _showResponses(BuildContext context) async {
+    var backend = context.read<BackendService>();
+
+    Quiz? q = await backend.getQuizData(team.id, quiz.name);
+    if (q != null) {
+      quiz.copy(q);
+    }
+
+    Map? data = await backend.getQuizResponses(quiz.name, team.id);
+    if (context.mounted && data != null) {
+      showDialog(
+          context: context,
+          builder: (_) => ResponsesDialog(
+              responses: data['responses'],
+              noResponse: data['noAnswer'],
+              quiz: quiz));
+    }
   }
 }
