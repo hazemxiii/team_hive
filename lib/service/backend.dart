@@ -15,9 +15,9 @@ class RequestResponse {
 class BackendService {
   final _auth = FirebaseAuth.instance;
   // final _firestore = FirebaseFirestore.instance;
-  // final _serverUrl = "team-hive-api.vercel.app";
-  final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = false;
+  final _serverUrl = "team-hive-api.vercel.app";
+  // final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = true;
   MyUser? _currentUser;
 
   Future<RequestResponse> _makeRequest(String resource, Map data) async {

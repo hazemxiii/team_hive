@@ -35,9 +35,10 @@ class App extends StatelessWidget {
     final firebase = context.read<BackendService>();
     return MaterialApp(
       theme: ThemeData(
+          colorSchemeSeed: Style.sec,
           textSelectionTheme: TextSelectionThemeData(
-        selectionColor: Color.lerp(Style.back, Style.main, 0.5),
-      )),
+            selectionColor: Color.lerp(Style.back, Style.main, 0.5),
+          )),
       home: !firebase.isLogged
           ? const LoginPage()
           : FutureBuilder(
