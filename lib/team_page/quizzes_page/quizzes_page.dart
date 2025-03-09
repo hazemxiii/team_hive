@@ -85,7 +85,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
   }
 }
 
-class QuizWidget extends StatelessWidget {
+class QuizWidget extends StatefulWidget {
   final Quiz quiz;
   final Team team;
   final Function goToQuiz;
@@ -96,11 +96,16 @@ class QuizWidget extends StatelessWidget {
       required this.goToQuiz});
 
   @override
+  State<QuizWidget> createState() => _QuizWidgetState();
+}
+
+class _QuizWidgetState extends State<QuizWidget> {
+  @override
   Widget build(BuildContext context) {
     final backend = context.read<BackendService>();
-    int status = quiz.getQuizState();
+    int status = widget.quiz.getQuizState();
     return InkWell(
-      onTap: () => goToQuiz(context, team, quiz, true),
+      onTap: () => widget.goToQuiz(context, widget.team, widget.quiz, true),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -118,21 +123,22 @@ class QuizWidget extends StatelessWidget {
                         color: Style.main,
                         fontWeight: FontWeight.bold,
                         fontSize: 18),
-                    quiz.name,
+                    widget.quiz.name,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (team.isOwner(backend.user)) _contextMenu(),
-                if (quiz.grade != null) _gradeWidget(quiz.grade!)
+                if (widget.team.isOwner(backend.user)) _contextMenu(),
+                if (widget.quiz.grade != null) _gradeWidget(widget.quiz.grade!)
               ],
             ),
-            if (quiz.grade == null)
+            if (widget.quiz.grade == null)
               Container(
                   margin: const EdgeInsets.symmetric(vertical: 5),
                   child: _examStatusWidget(status)),
-            if (quiz.startDate != null)
-              _dateWidget(quiz.startDate!, "Starts At"),
-            if (quiz.deadline != null) _dateWidget(quiz.deadline!, "Due by")
+            if (widget.quiz.startDate != null)
+              _dateWidget(widget.quiz.startDate!, "Starts At"),
+            if (widget.quiz.deadline != null)
+              _dateWidget(widget.quiz.deadline!, "Due by")
           ],
         ),
       ),
@@ -145,16 +151,15 @@ class QuizWidget extends StatelessWidget {
         itemBuilder: (context) {
           return [
             PopupMenuItem(
-                onTap: () => _showResponses(context),
+                onTap: () => _showResponses(),
                 child: Text(
                   "Show Responses",
                   style: TextStyle(color: Style.back),
                 )),
             PopupMenuItem(
-                // TODO: implement this
-                onTap: null,
+                onTap: () => _toggleShowAnswers(),
                 child: Text(
-                  quiz.answersShown ? "Hide Answers" : "Show Answers",
+                  widget.quiz.answersShown ? "Hide Answers" : "Show Answers",
                   style: TextStyle(color: Style.back),
                 ))
           ];
@@ -237,22 +242,41 @@ class QuizWidget extends StatelessWidget {
     return "${date.day.toString().padLeft(2, "0")}/${date.month.toString().padLeft(2, "0")}/${date.year} ${time.hourOfPeriod}:${time.minute.toString().padLeft(2, "0")} ${time.period == DayPeriod.am ? "AM" : "PM"}";
   }
 
-  void _showResponses(BuildContext context) async {
+  void _showResponses() async {
     var backend = context.read<BackendService>();
 
-    Quiz? q = await backend.getQuizData(team.id, quiz.name);
+    Quiz? q = await backend.getQuizData(widget.team.id, widget.quiz.name);
     if (q != null) {
-      quiz.copy(q);
+      widget.quiz.copy(q);
     }
 
-    Map? data = await backend.getQuizResponses(quiz.name, team.id);
-    if (context.mounted && data != null) {
+    Map? data =
+        await backend.getQuizResponses(widget.quiz.name, widget.team.id);
+    if (mounted && data != null) {
       showDialog(
           context: context,
           builder: (_) => ResponsesDialog(
               responses: data['responses'],
               noResponse: data['noAnswer'],
-              quiz: quiz));
+              quiz: widget.quiz));
+    }
+  }
+
+  void _toggleShowAnswers() async {
+    bool success = await Provider.of<BackendService>(context, listen: false)
+        .toggleShowAnswers(widget.team.id, widget.quiz.name);
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(
+          content: Text(success
+              ? (widget.quiz.answersShown
+                  ? "Answers are Hidden"
+                  : "Answers are Now Visible to Members")
+              : "An Error Happened")));
+      setState(() {
+        widget.quiz.toggleAnswersShown();
+      });
     }
   }
 }

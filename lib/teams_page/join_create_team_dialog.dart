@@ -168,7 +168,7 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
       height: 40,
       minWidth: 120,
       color: Style.sec,
-      onPressed: isJoin ? _joinTeam : null,
+      onPressed: isJoin ? _joinTeam : _createTeam,
       child: Text(
         isJoin ? "Join" : "Create",
         style: TextStyle(color: Style.back),
@@ -191,19 +191,26 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
     return null;
   }
 
-  // void _createTeam() async {
-  //   if (_createFormKey.currentState!.validate()) {
-  //     widget.teamsNotifier.value = true;
-  //     if (await _firebase.createTeam(_createController.text)) {
-  //       List<Team> teams = await _firebase.getTeamsNames();
-  //       _firebase.user.setTeams(teams);
-  //       widget.teamsNotifier.value = false;
-  //       if (mounted) {
-  //         Navigator.of(context).pop();
-  //       }
-  //     }
-  //   }
-  // }
+// TODO: hide this for non-premium
+  void _createTeam() async {
+    if (_createFormKey.currentState!.validate()) {
+      widget.teamsNotifier.value = true;
+      if (await _firebase.createTeam(_createController.text)) {
+        List<Team> teams = await _firebase.getTeamsNames();
+        _firebase.user.setTeams(teams);
+        widget.teamsNotifier.value = false;
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } else {
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Failed to Create Team")));
+        }
+      }
+    }
+  }
 
   void _joinTeam() async {
     if (_joinFormKey.currentState!.validate()) {

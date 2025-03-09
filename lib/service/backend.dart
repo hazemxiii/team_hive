@@ -15,10 +15,12 @@ class RequestResponse {
 class BackendService {
   final _auth = FirebaseAuth.instance;
   // final _firestore = FirebaseFirestore.instance;
-  final _serverUrl = "team-hive-api.vercel.app";
-  // final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = true;
+  // TODO: debug
+  // final _serverUrl = "team-hive-api.vercel.app";
+  final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = false;
   MyUser? _currentUser;
+  final appVersion = "1.0.0";
 
   Future<RequestResponse> _makeRequest(String resource, Map data) async {
     data['token'] = await _user!.getIdToken();
@@ -39,6 +41,38 @@ class BackendService {
       return RequestResponse(ok: true, r: r.body);
     } catch (e) {
       return RequestResponse(ok: false, r: e.toString());
+    }
+  }
+
+  Future<bool> toggleShowAnswers(String teamId, String quizName) async {
+    RequestResponse r = await _makeRequest(
+        "quiz/answers/show", {"team": teamId, "quiz": quizName});
+    if (r.r == "ok") {
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> getAppData(BuildContext context) async {
+    RequestResponse r = await _makeRequest("app", {});
+    Map data = jsonDecode(r.r);
+    if (r.ok && context.mounted && data['version'] != appVersion) {
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                title: const Text("Newer version available"),
+                content: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text("Features"),
+                      ...(data['features'] as List)
+                          .map((feature) => Text("- $feature"))
+                    ],
+                  ),
+                ),
+              ));
     }
   }
 
@@ -138,22 +172,13 @@ class BackendService {
     await _auth.signOut();
   }
 
-  // TODO: leave this commented until the time comes
-  // Future<bool> createTeam(String teamName) async {
-  //   try {
-  //     await _firestore.runTransaction((transaction) async {
-  //       DocumentReference teamDoc = _firestore.collection("teams").doc();
-  //       DocumentReference ownerDoc = _firestore.doc("users/${user.uid}");
-  //       transaction.set(teamDoc, {"name": teamName, "owner": user.uid});
-  //       transaction.update(ownerDoc, {
-  //         "teams": [..._currentUser.teams.map((e) => e.id), teamDoc.id]
-  //       });
-  //     });
-  //     return true;
-  //   } catch (e) {
-  //     return false;
-  //   }
-  // }
+  Future<bool> createTeam(String teamName) async {
+    RequestResponse r = await _makeRequest("team/create", {"name": teamName});
+    if (r.r == "ok") {
+      return true;
+    }
+    return false;
+  }
 
   Future<void> joinTeam(String teamCode) async {
     await _makeRequest("team/join", {"team": teamCode});
@@ -228,7 +253,10 @@ class BackendService {
     if (r.ok) {
       List response = jsonDecode(r.r);
       for (var quiz in response) {
-        quizzes.add(Quiz(name: quiz['quiz'], grade: quiz['grade']));
+        quizzes.add(Quiz(
+            name: quiz['quiz'],
+            grade: quiz['grade'],
+            answersShown: quiz['showAnswers']));
       }
     }
     return quizzes;

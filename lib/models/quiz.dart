@@ -90,6 +90,10 @@ class Quiz {
     return null;
   }
 
+  void toggleAnswersShown() {
+    _answersShown = !_answersShown!;
+  }
+
   void setGrade(double? grade) {
     _grade = grade;
   }

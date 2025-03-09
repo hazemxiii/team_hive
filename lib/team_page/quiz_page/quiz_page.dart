@@ -11,7 +11,6 @@ import 'package:team_hive/team_page/quiz_page/fab.dart';
 import 'package:team_hive/team_page/quiz_page/question_widgets.dart';
 import 'package:team_hive/team_page/team_page.dart';
 
-// TODO: put show answer in the db
 class QuizPage extends StatefulWidget {
   final Team team;
   final Quiz quiz;

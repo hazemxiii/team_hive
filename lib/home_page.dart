@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:team_hive/Profile_page.dart';
 import 'package:team_hive/nav_bars.dart';
 import 'package:team_hive/service/app_colors.dart';
+import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/teams_page/teams_page.dart';
 
 class ActivePage {
@@ -37,6 +39,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<BackendService>(context, listen: false).getAppData(context);
     return Scaffold(
       bottomNavigationBar: _isScreenSmall() ? const BottomNavBarWidget() : null,
       backgroundColor: Style.back,

@@ -195,7 +195,6 @@ class _FormWidgetState extends State<FormWidget> {
             const SizedBox(
               height: 20,
             ),
-            // TODO: implement forgot password
             // _forgotPasswordBtn()
           ],
         ));
