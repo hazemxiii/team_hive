@@ -21,11 +21,11 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
   final _createController = TextEditingController();
   final _joinFormKey = GlobalKey<FormState>();
   final _createFormKey = GlobalKey<FormState>();
-  late final BackendService _firebase;
+  late final BackendService _backend;
 
   @override
   void initState() {
-    _firebase = context.read<BackendService>();
+    _backend = context.read<BackendService>();
     super.initState();
   }
 
@@ -46,7 +46,7 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
           children: [
             Text(
               textAlign: TextAlign.left,
-              "Create or Join a Team",
+              "${_backend.user.isPremium ? "Create or " : ""}Join a Team",
               style: Style.headingStyle,
             ),
             _segmentBtn(),
@@ -66,7 +66,7 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
       child: Row(
         children: [
           _segmentWidget(0, "Join"),
-          _segmentWidget(1, "Create"),
+          if (_backend.user.isPremium) _segmentWidget(1, "Create"),
         ],
       ),
     );
@@ -191,13 +191,12 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
     return null;
   }
 
-// TODO: hide this for non-premium
   void _createTeam() async {
     if (_createFormKey.currentState!.validate()) {
       widget.teamsNotifier.value = true;
-      if (await _firebase.createTeam(_createController.text)) {
-        List<Team> teams = await _firebase.getTeamsNames();
-        _firebase.user.setTeams(teams);
+      if (await _backend.createTeam(_createController.text)) {
+        List<Team> teams = await _backend.getTeamsNames();
+        _backend.user.setTeams(teams);
         widget.teamsNotifier.value = false;
         if (mounted) {
           Navigator.of(context).pop();
@@ -215,9 +214,9 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
   void _joinTeam() async {
     if (_joinFormKey.currentState!.validate()) {
       widget.teamsNotifier.value = true;
-      await _firebase.joinTeam(_joinController.text);
-      List<Team> teams = await _firebase.getTeamsNames();
-      _firebase.user.setTeams(teams);
+      await _backend.joinTeam(_joinController.text);
+      List<Team> teams = await _backend.getTeamsNames();
+      _backend.user.setTeams(teams);
       widget.teamsNotifier.value = false;
       if (mounted) {
         Navigator.of(context).pop();

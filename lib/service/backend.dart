@@ -14,13 +14,11 @@ class RequestResponse {
 
 class BackendService {
   final _auth = FirebaseAuth.instance;
-  // final _firestore = FirebaseFirestore.instance;
-  // TODO: debug
-  // final _serverUrl = "team-hive-api.vercel.app";
-  final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = false;
+  final _serverUrl = "team-hive-api.vercel.app";
+  // final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = true;
   MyUser? _currentUser;
-  final appVersion = "1.0.0";
+  final appVersion = "1.0.1";
 
   Future<RequestResponse> _makeRequest(String resource, Map data) async {
     data['token'] = await _user!.getIdToken();
@@ -89,7 +87,8 @@ class BackendService {
           email: _user!.email ?? "",
           fName: d["fName"] ?? ".",
           lName: d["lName"] ?? ".",
-          teams: await getTeamsNames());
+          teams: await getTeamsNames(),
+          isPremium: d['isPremium'] ?? false);
     }
   }
 
@@ -202,7 +201,8 @@ class BackendService {
             email: owner['email'],
             fName: owner['fName'],
             lName: owner['lName'],
-            teams: []);
+            teams: [],
+            isPremium: true);
         teams.add(Team(name: name, owner: ownerUser, id: id));
       }
     }
@@ -307,7 +307,11 @@ class BackendService {
 
   MyUser _parseUserFromResponse(Map r) {
     return MyUser(
-        email: r['email'], fName: r['fName'], lName: r['lName'], teams: []);
+        email: r['email'],
+        fName: r['fName'],
+        lName: r['lName'],
+        teams: [],
+        isPremium: r['isPremium'] ?? false);
   }
 
   Future<String?> getToken() async {
@@ -317,7 +321,12 @@ class BackendService {
   MyUser get user {
     if (_currentUser == null) {
       _auth.signOut();
-      return MyUser(email: "email", fName: "no", lName: "user", teams: []);
+      return MyUser(
+          email: "email",
+          fName: "no",
+          lName: "user",
+          teams: [],
+          isPremium: false);
     }
     return _currentUser!;
   }

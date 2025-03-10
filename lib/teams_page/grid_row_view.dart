@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
+import 'package:team_hive/service/backend.dart';
 
 class TeamsGridContainerWidget extends StatelessWidget {
   final List<Team> teams;
@@ -14,6 +16,7 @@ class TeamsGridContainerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isPremium = context.read<BackendService>().user.isPremium;
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -34,7 +37,7 @@ class TeamsGridContainerWidget extends StatelessWidget {
                   ),
                   Text(
                     textAlign: TextAlign.center,
-                    "Create/Join A Team",
+                    "${isPremium ? "Create/" : ""}Join A Team",
                     style: TextStyle(
                       color: Style.sec,
                     ),

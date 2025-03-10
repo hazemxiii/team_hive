@@ -6,12 +6,14 @@ class MyUser {
       required String fName,
       required String lName,
       required List<Team> teams,
+      required bool isPremium,
       String uid = ""}) {
     _email = email;
     _fName = fName;
     _lName = lName;
     _teams = teams;
     _uid = uid;
+    _isPremium = isPremium;
   }
 
   late String _email;
@@ -19,6 +21,7 @@ class MyUser {
   late String _lName;
   late String _uid;
   late List<Team> _teams;
+  late bool _isPremium;
 
   void setTeams(List<Team> teams) {
     _teams = teams;
@@ -44,6 +47,7 @@ class MyUser {
     return _lName;
   }
 
+  bool get isPremium => _isPremium;
   String get uid => _uid;
   List<Team> get teams => _teams;
 }
