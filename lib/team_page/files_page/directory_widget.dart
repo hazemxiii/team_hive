@@ -19,16 +19,19 @@ class _DirectoryWidgetState extends State<DirectoryWidget> {
       onTap: () {
         widget.path.value += "/${widget.directory.name}";
       },
-      child: Row(
-        spacing: 10,
-        children: [
-          Icon(
-            Icons.folder_open_outlined,
-            color: Style.sec,
-          ),
-          Text(widget.directory.name,
-              style: const TextStyle(fontWeight: FontWeight.bold)),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          spacing: 10,
+          children: [
+            Icon(
+              Icons.folder_open_outlined,
+              color: Style.sec,
+            ),
+            Text(widget.directory.name,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }

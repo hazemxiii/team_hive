@@ -22,6 +22,20 @@ class HiveFileSystem {
     return HiveFileSystem(name: name, children: children);
   }
 
+  HiveFileSystem parsePath(String path) {
+    if (path == "root") {
+      return this;
+    }
+    final pathList = path.split("/");
+    pathList.remove("root");
+    HiveFileSystem files = this;
+    for (var i = 0; i < pathList.length; i++) {
+      files =
+          files.children.firstWhere((element) => element.name == pathList[i]);
+    }
+    return files;
+  }
+
   bool get isDirectory => !name.contains('.');
 }
 

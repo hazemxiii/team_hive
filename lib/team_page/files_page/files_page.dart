@@ -5,6 +5,7 @@ import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/team_page/files_page/file_widget.dart';
 import 'package:team_hive/team_page/files_page/directory_widget.dart';
 import 'package:team_hive/service/backend.dart';
+import 'package:team_hive/team_page/files_page/options_widget.dart';
 
 class FilesPage extends StatefulWidget {
   final Team team;
@@ -25,18 +26,18 @@ class _FilesPageState extends State<FilesPage> {
     }
   }
 
-  HiveFileSystem _parseFiles() {
-    if (_pathNotifier.value == "root") {
-      return widget.team.files;
-    }
-    final path = _pathNotifier.value.split("/");
-    path.remove("root");
-    HiveFileSystem files = widget.team.files;
-    for (var i = 0; i < path.length; i++) {
-      files = files.children.firstWhere((element) => element.name == path[i]);
-    }
-    return files;
-  }
+  // HiveFileSystem _parseFiles() {
+  //   if (_pathNotifier.value == "root") {
+  //     return widget.team.files;
+  //   }
+  //   final path = _pathNotifier.value.split("/");
+  //   path.remove("root");
+  //   HiveFileSystem files = widget.team.files;
+  //   for (var i = 0; i < path.length; i++) {
+  //     files = files.children.firstWhere((element) => element.name == path[i]);
+  //   }
+  //   return files;
+  // }
 
   @override
   void initState() {
@@ -55,12 +56,14 @@ class _FilesPageState extends State<FilesPage> {
       ),
       child: Column(
         children: [
-          _optionsWidget(),
+          // _optionsWidget(),
+          OptionsWidget(path: _pathNotifier, team: widget.team),
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: _pathNotifier,
               builder: (context, value, child) {
-                final files = _parseFiles();
+                final files = widget.team.files.parsePath(value);
+                // final files = _parseFiles();
                 return ListView.builder(
                     itemCount: files.children.length,
                     itemBuilder: (context, index) {
@@ -78,34 +81,6 @@ class _FilesPageState extends State<FilesPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _optionsWidget() {
-    return Column(
-      children: [
-        InkWell(
-          onTap: () {
-            _pathNotifier.value = "root";
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              spacing: 10,
-              children: [
-                Icon(Icons.home_outlined, color: Style.sec),
-                ValueListenableBuilder(
-                    valueListenable: _pathNotifier,
-                    builder: (context, value, child) {
-                      return Text(value.replaceAll('root', ''),
-                          style: const TextStyle(fontWeight: FontWeight.bold));
-                      // TODO: options
-                    })
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

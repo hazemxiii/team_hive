@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_hive/models/file_system.dart';
@@ -19,21 +20,31 @@ class BackendService {
   // final _serverUrl = "team-hive-api-five.vercel.app";
   final _serverUrl = "127.0.0.1:5000";
   final bool _secure = false;
-  MyUser? _currentUser;
+  static MyUser? _currentUser;
   final appVersion = "1.0.1";
 
-  Future<RequestResponse> _makeRequest(String resource, Map data) async {
-    if (_user == null) {
-      return RequestResponse(ok: false, r: "User not logged in");
-    }
-    data['token'] = await _user!.getIdToken();
+  Future<RequestResponse> _makeRequest(String resource, Map data,
+      {File? file}) async {
     try {
-      Uri? url;
-      if (_secure) {
-        url = Uri.https(_serverUrl, resource);
-      } else {
-        url = Uri.http(_serverUrl, resource);
+      if (_user == null) {
+        return RequestResponse(ok: false, r: "User not logged in");
       }
+      data['token'] = await _user!.getIdToken();
+      Uri? url;
+      url = _secure
+          ? Uri.https(_serverUrl, resource)
+          : Uri.http(_serverUrl, resource);
+
+      if (file != null) {
+        final request = http.MultipartRequest('POST', url);
+        request.files
+            .add(http.MultipartFile.fromBytes('file', file.readAsBytesSync()));
+        request.fields.addAll(Map<String, String>.from(data));
+        final response = await request.send();
+        final responseBody = await response.stream.bytesToString();
+        return RequestResponse(ok: response.statusCode == 200, r: responseBody);
+      }
+
       var r = await http.post(url,
           headers: {"Content-Type": "application/json"},
           body: jsonEncode(data));
