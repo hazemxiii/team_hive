@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:team_hive/models/file_system.dart';
 import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/models/user.dart';
@@ -209,17 +210,18 @@ class BackendService {
     return teams;
   }
 
-  Future<void> getTeamFiles(Team t) async {
+  Future<HiveFileSystem?> getTeamFiles(Team t) async {
     RequestResponse r = await _makeRequest("team/files", {"team_id": t.id});
     if (r.ok) {
-      Map data = {};
+      Map<String, dynamic> data = {};
       try {
         data = jsonDecode(r.r);
-        print(data);
+        return HiveFileSystem.fromMap(data);
       } catch (e) {
         debugPrint("Failed to decode team files: $e");
       }
     }
+    return null;
   }
 
   Future<String?> createQuiz(Team t, Quiz q) async {

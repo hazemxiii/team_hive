@@ -6,6 +6,7 @@ import 'package:team_hive/home_page.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
+import 'package:team_hive/team_page/files_page/Files_page.dart';
 import 'package:team_hive/team_page/quizzes_page/quizzes_page.dart';
 import 'package:team_hive/team_page/team_settings_page/team_settings_page.dart';
 
@@ -21,12 +22,11 @@ class _TeamPageState extends State<TeamPage> {
   late final BackendService _firebase;
   late Map<String, List<IconData>> _icons;
   late List<Widget> _pages;
-  int _activePageI = 2;
+  int _activePageI = 0;
 
   @override
   void initState() {
     _firebase = context.read<BackendService>();
-    _firebase.getTeamFiles(widget.team);
     _icons = _drawerIcons();
     _pages = _pagesBuilder();
     super.initState();
@@ -115,7 +115,7 @@ class _TeamPageState extends State<TeamPage> {
 
   Map<String, List<IconData>> _drawerIcons() {
     return {
-      "Announcements": [Icons.mic_outlined, Icons.mic],
+      "Files": [Icons.folder_outlined, Icons.folder],
       "Chat": [Icons.chat_outlined, Icons.chat],
       "Quizzes": [Icons.check_outlined, Icons.check],
       "Tasks": [Icons.book_outlined, Icons.book],
@@ -126,10 +126,7 @@ class _TeamPageState extends State<TeamPage> {
 
   List<Widget> _pagesBuilder() {
     return [
-      const ComingSoonPage(
-        title: "Announcements",
-        isFullPage: true,
-      ),
+      FilesPage(team: widget.team),
       const ComingSoonPage(
         title: "Chat",
         isFullPage: true,
