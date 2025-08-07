@@ -21,8 +21,8 @@ class Style {
   static void initColors() {
     _back = _isLight ? Colors.white : const Color.fromARGB(255, 35, 35, 35);
     _main = _isLight ? const Color.fromARGB(255, 0, 0, 0) : Colors.white;
-    _sec = Colors.green;
-    // _sec = Colors.blue;
+    // _sec = Colors.green;
+    _sec = Colors.blue;
     _section = const Color(0xFFF3F4F6);
     _headingStyle =
         TextStyle(color: _main, fontSize: 22, fontWeight: FontWeight.bold);

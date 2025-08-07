@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/coming_soon.dart';
 import 'package:team_hive/home_page.dart';
@@ -6,6 +7,7 @@ import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/quizzes_page/quizzes_page.dart';
+import 'package:team_hive/team_page/team_settings_page/team_settings_page.dart';
 
 class TeamPage extends StatefulWidget {
   final Team team;
@@ -24,6 +26,7 @@ class _TeamPageState extends State<TeamPage> {
   @override
   void initState() {
     _firebase = context.read<BackendService>();
+    _firebase.getTeamFiles(widget.team);
     _icons = _drawerIcons();
     _pages = _pagesBuilder();
     super.initState();
@@ -42,7 +45,21 @@ class _TeamPageState extends State<TeamPage> {
                   (_) => false),
               icon: const Icon(Icons.home_outlined))
         ],
-        title: Text(widget.team.name),
+        title: Row(
+          children: [
+            Text(widget.team.name),
+            const SizedBox(
+              width: 10,
+            ),
+            IconButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: widget.team.id));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Team ID copied")));
+                },
+                icon: const Icon(Icons.person_add_outlined)),
+          ],
+        ),
         backgroundColor: Style.section,
         foregroundColor: Style.sec,
       ),
@@ -122,10 +139,7 @@ class _TeamPageState extends State<TeamPage> {
         title: "Tasks",
         isFullPage: true,
       ),
-      const ComingSoonPage(
-        title: "Settings",
-        isFullPage: true,
-      )
+      TeamSettingsPage(team: widget.team),
     ];
   }
 }

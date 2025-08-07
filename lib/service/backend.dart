@@ -14,13 +14,17 @@ class RequestResponse {
 
 class BackendService {
   final _auth = FirebaseAuth.instance;
-  final _serverUrl = "team-hive-api.vercel.app";
-  // final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = true;
+  // TODO: backend link
+  // final _serverUrl = "team-hive-api-five.vercel.app";
+  final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = false;
   MyUser? _currentUser;
   final appVersion = "1.0.1";
 
   Future<RequestResponse> _makeRequest(String resource, Map data) async {
+    if (_user == null) {
+      return RequestResponse(ok: false, r: "User not logged in");
+    }
     data['token'] = await _user!.getIdToken();
     try {
       Uri? url;
@@ -122,14 +126,6 @@ class BackendService {
       }
     }
     return false;
-    // try {
-    //   DocumentReference userRef = _firestore.doc("users/${user.uid}");
-    //   await userRef.update({"fName": fName, "lName": lName});
-    //   return true;
-    // } catch (e) {
-    //   debugPrint(e.toString());
-    //   return false;
-    // }
   }
 
   Future<String?> emailSignIn(String email, String password) async {
@@ -183,6 +179,10 @@ class BackendService {
     await _makeRequest("team/join", {"team": teamCode});
   }
 
+  Future<void> deleteTeam(String teamId) async {
+    await _makeRequest("team/delete", {"team": teamId});
+  }
+
   Future<List<Team>> getTeamsNames() async {
     List<Team> teams = [];
     RequestResponse r = await _makeRequest("teams", {});
@@ -207,6 +207,19 @@ class BackendService {
       }
     }
     return teams;
+  }
+
+  Future<void> getTeamFiles(Team t) async {
+    RequestResponse r = await _makeRequest("team/files", {"team_id": t.id});
+    if (r.ok) {
+      Map data = {};
+      try {
+        data = jsonDecode(r.r);
+        print(data);
+      } catch (e) {
+        debugPrint("Failed to decode team files: $e");
+      }
+    }
   }
 
   Future<String?> createQuiz(Team t, Quiz q) async {
