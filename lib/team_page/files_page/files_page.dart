@@ -97,8 +97,9 @@ class _FilesPageState extends State<FilesPage> {
                 ValueListenableBuilder(
                     valueListenable: _pathNotifier,
                     builder: (context, value, child) {
-                      return Text(value,
+                      return Text(value.replaceAll('root', ''),
                           style: const TextStyle(fontWeight: FontWeight.bold));
+                      // TODO: options
                     })
               ],
             ),

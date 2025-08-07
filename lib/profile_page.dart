@@ -142,15 +142,15 @@ class _EditNameDialogState extends State<EditNameDialog> {
       actions: [
         TextButton(
             style: ButtonStyle(
-                overlayColor:
-                    WidgetStatePropertyAll(Style.main.withOpacity(_opacity)),
+                overlayColor: WidgetStatePropertyAll(
+                    Style.main.withValues(alpha: _opacity)),
                 foregroundColor: WidgetStatePropertyAll(Style.main)),
             onPressed: Navigator.of(context).pop,
             child: const Text("Cancel")),
         TextButton(
             style: ButtonStyle(
               overlayColor:
-                  WidgetStatePropertyAll(Style.sec.withOpacity(_opacity)),
+                  WidgetStatePropertyAll(Style.sec.withValues(alpha: _opacity)),
               foregroundColor: WidgetStatePropertyAll(Style.sec),
             ),
             onPressed: _save,
