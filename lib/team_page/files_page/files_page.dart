@@ -17,8 +17,6 @@ class FilesPage extends StatefulWidget {
 }
 
 class _FilesPageState extends State<FilesPage> {
-  final _pathNotifier = ValueNotifier("root");
-
   @override
   void initState() {
     super.initState();
@@ -35,7 +33,7 @@ class _FilesPageState extends State<FilesPage> {
       child: Column(
         spacing: 20,
         children: [
-          OptionsWidget(path: _pathNotifier, team: widget.team),
+          OptionsWidget(team: widget.team),
           Expanded(
             child: Consumer<FilesNotifier>(
               builder: (context, value, child) {
@@ -45,8 +43,7 @@ class _FilesPageState extends State<FilesPage> {
                     itemBuilder: (context, index) {
                       if (files.children[index].isDirectory) {
                         return DirectoryWidget(
-                            directory: files.children[index],
-                            path: _pathNotifier);
+                            directory: files.children[index]);
                       } else {
                         return FileWidget(
                             file: files.children[index] as HiveFile);

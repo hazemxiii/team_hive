@@ -5,10 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:team_hive/service/files_page/files_notifier.dart';
 
 class DirectoryWidget extends StatefulWidget {
-  final ValueNotifier<String> path;
   final HiveFileSystem directory;
-  const DirectoryWidget(
-      {super.key, required this.directory, required this.path});
+  const DirectoryWidget({super.key, required this.directory});
 
   @override
   State<DirectoryWidget> createState() => _DirectoryWidgetState();
