@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:team_hive/models/file_system.dart';
@@ -24,7 +24,7 @@ class BackendService {
   final appVersion = "1.0.1";
 
   Future<RequestResponse> _makeRequest(String resource, Map data,
-      {File? file}) async {
+      {Uint8List? file, String? fileName}) async {
     try {
       if (_user == null) {
         return RequestResponse(ok: false, r: "User not logged in");
@@ -36,10 +36,14 @@ class BackendService {
           : Uri.http(_serverUrl, resource);
 
       if (file != null) {
-        final request = http.MultipartRequest('POST', url);
-        request.files
-            .add(http.MultipartFile.fromBytes('file', file.readAsBytesSync()));
-        request.fields.addAll(Map<String, String>.from(data));
+        final request = http.MultipartRequest(
+          'POST',
+          url,
+        );
+        request.headers.addAll(
+            {"Content-Type": "multipart/form-data", 'data': jsonEncode(data)});
+        request.files.add(http.MultipartFile.fromBytes('file', file,
+            filename: fileName ?? "file"));
         final response = await request.send();
         final responseBody = await response.stream.bytesToString();
         return RequestResponse(ok: response.statusCode == 200, r: responseBody);
@@ -233,6 +237,21 @@ class BackendService {
       }
     }
     return null;
+  }
+
+  Future<bool> uploadTeamFile(
+      {required Team team,
+      required Uint8List file,
+      required String fileName,
+      required String subPath}) async {
+    RequestResponse r = await _makeRequest(
+        "team/upload", {"team_id": team.id, "sub_path": subPath},
+        file: file, fileName: fileName);
+    if (!r.ok) {
+      debugPrint('Failed to upload file: ${r.r}');
+      return false;
+    }
+    return true;
   }
 
   Future<String?> createQuiz(Team t, Quiz q) async {

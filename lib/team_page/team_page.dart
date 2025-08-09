@@ -6,6 +6,7 @@ import 'package:team_hive/home_page.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
+import 'package:team_hive/service/files_page/files_notifier.dart';
 import 'package:team_hive/team_page/files_page/Files_page.dart';
 import 'package:team_hive/team_page/quizzes_page/quizzes_page.dart';
 import 'package:team_hive/team_page/team_settings_page/team_settings_page.dart';
@@ -126,7 +127,10 @@ class _TeamPageState extends State<TeamPage> {
 
   List<Widget> _pagesBuilder() {
     return [
-      FilesPage(team: widget.team),
+      ChangeNotifierProvider(
+        create: (context) => FilesNotifier(team: widget.team),
+        child: FilesPage(team: widget.team),
+      ),
       const ComingSoonPage(
         title: "Chat",
         isFullPage: true,

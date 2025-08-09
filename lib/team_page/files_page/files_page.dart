@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:team_hive/models/file_system.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
+import 'package:team_hive/service/files_page/files_notifier.dart';
 import 'package:team_hive/team_page/files_page/file_widget.dart';
 import 'package:team_hive/team_page/files_page/directory_widget.dart';
-import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/team_page/files_page/options_widget.dart';
 
 class FilesPage extends StatefulWidget {
@@ -18,30 +19,8 @@ class FilesPage extends StatefulWidget {
 class _FilesPageState extends State<FilesPage> {
   final _pathNotifier = ValueNotifier("root");
 
-  void _loadFiles() async {
-    final files = await BackendService().getTeamFiles(widget.team);
-    if (files != null) {
-      widget.team.updateFiles(files);
-      setState(() {});
-    }
-  }
-
-  // HiveFileSystem _parseFiles() {
-  //   if (_pathNotifier.value == "root") {
-  //     return widget.team.files;
-  //   }
-  //   final path = _pathNotifier.value.split("/");
-  //   path.remove("root");
-  //   HiveFileSystem files = widget.team.files;
-  //   for (var i = 0; i < path.length; i++) {
-  //     files = files.children.firstWhere((element) => element.name == path[i]);
-  //   }
-  //   return files;
-  // }
-
   @override
   void initState() {
-    _loadFiles();
     super.initState();
   }
 
@@ -49,21 +28,18 @@ class _FilesPageState extends State<FilesPage> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
-      constraints: const BoxConstraints(maxWidth: 1000),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Style.section),
       ),
       child: Column(
+        spacing: 20,
         children: [
-          // _optionsWidget(),
           OptionsWidget(path: _pathNotifier, team: widget.team),
           Expanded(
-            child: ValueListenableBuilder(
-              valueListenable: _pathNotifier,
+            child: Consumer<FilesNotifier>(
               builder: (context, value, child) {
-                final files = widget.team.files.parsePath(value);
-                // final files = _parseFiles();
+                final files = value.cwdFiles;
                 return ListView.builder(
                     itemCount: files.children.length,
                     itemBuilder: (context, index) {
