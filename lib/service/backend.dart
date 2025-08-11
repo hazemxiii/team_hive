@@ -272,6 +272,18 @@ class BackendService {
     return true;
   }
 
+  Future<bool> moveTeamFiles(Team team, Map<String, String> paths) async {
+    RequestResponse r = await _makeRequest("files/move", {
+      "team_id": team.id,
+      "paths": paths,
+    });
+    if (!r.ok) {
+      debugPrint('Failed to move file: ${r.r}');
+      return false;
+    }
+    return true;
+  }
+
   Future<String?> createQuiz(Team t, Quiz q) async {
     /// Returns an error as a nullable string
     Map<String, dynamic> quizEncoded = q.encode(true);

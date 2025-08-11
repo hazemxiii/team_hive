@@ -4,12 +4,16 @@ import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/service/files_page/files_notifier.dart';
+import 'package:team_hive/team_page/files_page/confirm_delete_files_dialog.dart';
 
 class OptionsWidget extends StatelessWidget {
   final Team team;
   const OptionsWidget({super.key, required this.team});
 
   void _deleteFiles(BuildContext context) async {
+    final confirm = await ConfirmDeleteFilesDialog.show(context);
+    if (!confirm) return;
+    if (!context.mounted) return;
     final success = await context.read<FilesNotifier>().deleteFile();
     if (!context.mounted) return;
     if (!success) {

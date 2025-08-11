@@ -141,16 +141,13 @@ class FilesNotifier extends ChangeNotifier {
   }
 
   Future<void> moveFiles() async {
-    final oldPaths = <String>[];
-    for (final file in _movingFiles) {
-      oldPaths.add('$_oldMovePath${file.name}');
-    }
-    final newPaths = <String>[];
+    final Map<String, String> paths = {};
     final pathWithoutRoot = _pathWithoutRoot();
     for (final file in _movingFiles) {
-      newPaths.add('$pathWithoutRoot${file.name}');
+      paths['$_oldMovePath${file.name}'] = '$pathWithoutRoot${file.name}';
     }
-    // TODO x call the backend
+    final success = await BackendService().moveTeamFiles(team, paths);
+    if (!success) return;
     for (final file in _movingFiles) {
       _oldMoveDirectory!.children.remove(file);
     }
@@ -163,4 +160,5 @@ class FilesNotifier extends ChangeNotifier {
     _oldMoveDirectory = null;
     notifyListeners();
   }
+  // TODO x rename
 }
