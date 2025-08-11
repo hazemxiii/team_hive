@@ -1,10 +1,10 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:team_hive/models/file_system.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/files_page/files_notifier.dart';
-import 'package:team_hive/team_page/files_page/file_widget.dart';
 import 'package:team_hive/team_page/files_page/directory_widget.dart';
 import 'package:team_hive/team_page/files_page/options_widget.dart';
 
@@ -41,13 +41,7 @@ class _FilesPageState extends State<FilesPage> {
                 return ListView.builder(
                     itemCount: files.children.length,
                     itemBuilder: (context, index) {
-                      if (files.children[index].isDirectory) {
-                        return DirectoryWidget(
-                            directory: files.children[index]);
-                      } else {
-                        return FileWidget(
-                            file: files.children[index] as HiveFile);
-                      }
+                      return DirectoryWidget(directory: files.children[index]);
                     });
               },
             ),

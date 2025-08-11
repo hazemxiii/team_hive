@@ -9,6 +9,15 @@ class OptionsWidget extends StatelessWidget {
   final Team team;
   const OptionsWidget({super.key, required this.team});
 
+  void _deleteFiles(BuildContext context) async {
+    final success = await context.read<FilesNotifier>().deleteFile(context);
+    if (!context.mounted) return;
+    if (!success) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Failed to delete file")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -24,6 +33,10 @@ class OptionsWidget extends StatelessWidget {
             children: [
               _newFolderBtn(context),
               _uploadBtn(context),
+              if (context.watch<FilesNotifier>().selectedFiles.isNotEmpty) ...[
+                _deleteBtn(context),
+                _deselectAllBtn(context)
+              ],
             ],
           ),
       ],
@@ -80,6 +93,33 @@ class OptionsWidget extends StatelessWidget {
         children: [
           Icon(Icons.upload_file_outlined, color: Style.sec),
           const Text("Upload", style: TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _deleteBtn(BuildContext context) {
+    return MaterialButton(
+      onPressed: () => _deleteFiles(context),
+      child: Row(
+        spacing: 10,
+        children: [
+          Icon(Icons.delete_outlined, color: Style.sec),
+          const Text("Delete", style: TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _deselectAllBtn(BuildContext context) {
+    return MaterialButton(
+      onPressed: () => context.read<FilesNotifier>().deselectAll(),
+      child: Row(
+        spacing: 10,
+        children: [
+          Icon(Icons.remove_outlined, color: Style.sec),
+          const Text("Deselect All",
+              style: TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );

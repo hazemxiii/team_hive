@@ -14,11 +14,13 @@ class FilesNotifier extends ChangeNotifier {
 
   final Team team;
   String _path = 'root';
-  // List<HiveFileSystem> _selectedFiles = [];
+  List<HiveFileSystem> _selectedFiles = [];
 
   String get path => _path;
   HiveFileSystem get files => team.files;
   HiveFileSystem get cwdFiles => files.parsePath(path);
+  List<HiveFileSystem> get selectedFiles => _selectedFiles;
+  bool isSelected(HiveFileSystem file) => _selectedFiles.contains(file);
 
   Future<void> _loadData() async {
     final files = await BackendService().getTeamFiles(team);
@@ -30,6 +32,7 @@ class FilesNotifier extends ChangeNotifier {
 
   void goToHome() {
     _path = 'root';
+    _selectedFiles = [];
     notifyListeners();
   }
 
@@ -38,11 +41,13 @@ class FilesNotifier extends ChangeNotifier {
     if (pathParts.length == 1) return;
     pathParts.removeLast();
     _path = pathParts.join('/');
+    _selectedFiles = [];
     notifyListeners();
   }
 
   void goToDirectory(HiveFileSystem directory) {
     _path = '$path/${directory.name}';
+    _selectedFiles = [];
     notifyListeners();
   }
 
@@ -83,5 +88,40 @@ class FilesNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  // TODO delete & move
+  void selectFile(HiveFileSystem file) {
+    if (_selectedFiles.contains(file)) {
+      _selectedFiles.remove(file);
+    } else {
+      _selectedFiles.add(file);
+    }
+    notifyListeners();
+  }
+
+  void deselectAll() {
+    _selectedFiles = [];
+    notifyListeners();
+  }
+
+  Future<bool> deleteFile(BuildContext context) async {
+    final paths = <String>[];
+    final currentPath = path;
+    final pathParts = currentPath.split('/');
+    pathParts.remove('root');
+    for (final file in _selectedFiles) {
+      final path = pathParts.isNotEmpty ? '${pathParts.join('/')}/' : '';
+      paths.add('$path${file.name}');
+    }
+    final success =
+        await context.read<BackendService>().deleteTeamFile(team, paths);
+    if (!success) return success;
+    final files = cwdFiles;
+    for (final file in _selectedFiles) {
+      files.children.remove(file);
+    }
+    _selectedFiles = [];
+    notifyListeners();
+    return true;
+  }
+
+  // TODO move
 }

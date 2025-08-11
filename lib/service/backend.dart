@@ -254,6 +254,18 @@ class BackendService {
     return true;
   }
 
+  Future<bool> deleteTeamFile(Team team, List<String> paths) async {
+    RequestResponse r = await _makeRequest("files/delete", {
+      "team_id": team.id,
+      "files_paths": paths,
+    });
+    if (!r.ok) {
+      debugPrint('Failed to delete file: ${r.r}');
+      return false;
+    }
+    return true;
+  }
+
   Future<String?> createQuiz(Team t, Quiz q) async {
     /// Returns an error as a nullable string
     Map<String, dynamic> quizEncoded = q.encode(true);

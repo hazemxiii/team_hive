@@ -3,6 +3,7 @@ import 'package:team_hive/models/file_system.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:team_hive/service/files_page/files_notifier.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DirectoryWidget extends StatefulWidget {
   final HiveFileSystem directory;
@@ -13,18 +14,61 @@ class DirectoryWidget extends StatefulWidget {
 }
 
 class _DirectoryWidgetState extends State<DirectoryWidget> {
+  late final bool isFile;
+  @override
+  void initState() {
+    super.initState();
+    isFile = widget.directory is HiveFile;
+  }
+
+  void _onTap() {
+    if (context.read<FilesNotifier>().selectedFiles.isNotEmpty) {
+      context.read<FilesNotifier>().selectFile(widget.directory);
+      return;
+    }
+    if (isFile) {
+      _downloadFile(context);
+    } else {
+      context.read<FilesNotifier>().goToDirectory(widget.directory);
+    }
+  }
+
+  void _onLongPress() {
+    if (context.read<FilesNotifier>().selectedFiles.isNotEmpty) {
+      return;
+    }
+    context.read<FilesNotifier>().selectFile(widget.directory);
+  }
+
+  void _downloadFile(BuildContext context) async {
+    try {
+      await launchUrl(Uri.parse((widget.directory as HiveFile).content),
+          mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (!context.mounted) return;
+      debugPrint("Error opening file: ${e.toString()}");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Failed to open file")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () =>
-          context.read<FilesNotifier>().goToDirectory(widget.directory),
-      child: Padding(
+      onLongPress: () => _onLongPress(),
+      onTap: () => _onTap(),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.watch<FilesNotifier>().isSelected(widget.directory)
+              ? Style.sec.withValues(alpha: 0.1)
+              : Colors.transparent,
+        ),
         padding: const EdgeInsets.all(8.0),
         child: Row(
           spacing: 10,
           children: [
             Icon(
-              Icons.folder_open_outlined,
+              isFile ? Icons.file_present_outlined : Icons.folder_open_outlined,
               color: Style.sec,
             ),
             Text(widget.directory.name,
