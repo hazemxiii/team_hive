@@ -10,7 +10,7 @@ class OptionsWidget extends StatelessWidget {
   const OptionsWidget({super.key, required this.team});
 
   void _deleteFiles(BuildContext context) async {
-    final success = await context.read<FilesNotifier>().deleteFile(context);
+    final success = await context.read<FilesNotifier>().deleteFile();
     if (!context.mounted) return;
     if (!success) {
       ScaffoldMessenger.of(context)
@@ -35,8 +35,11 @@ class OptionsWidget extends StatelessWidget {
               _uploadBtn(context),
               if (context.watch<FilesNotifier>().selectedFiles.isNotEmpty) ...[
                 _deleteBtn(context),
-                _deselectAllBtn(context)
+                _deselectAllBtn(context),
+                _markFilesAsMovingBtn(context),
               ],
+              if (context.watch<FilesNotifier>().isPendingMove)
+                _moveFilesBtn(context),
             ],
           ),
       ],
@@ -119,6 +122,33 @@ class OptionsWidget extends StatelessWidget {
         children: [
           Icon(Icons.remove_outlined, color: Style.sec),
           const Text("Deselect All",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _markFilesAsMovingBtn(BuildContext context) {
+    return MaterialButton(
+      onPressed: () => context.read<FilesNotifier>().markFilesAsMoving(),
+      child: Row(
+        spacing: 10,
+        children: [
+          Icon(Icons.cut_outlined, color: Style.sec),
+          const Text("Move", style: TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _moveFilesBtn(BuildContext context) {
+    return MaterialButton(
+      onPressed: () => context.read<FilesNotifier>().moveFiles(),
+      child: Row(
+        spacing: 10,
+        children: [
+          Icon(Icons.paste_outlined, color: Style.sec),
+          const Text("Move Here",
               style: TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),

@@ -14,12 +14,18 @@ class FilesNotifier extends ChangeNotifier {
   final Team team;
   String _path = 'root';
   List<HiveFileSystem> _selectedFiles = [];
+  List<HiveFileSystem> _movingFiles = [];
+  String? _oldMovePath;
+  HiveFileSystem? _oldMoveDirectory;
 
   String get path => _path;
   HiveFileSystem get files => team.files;
   HiveFileSystem get cwdFiles => files.parsePath(path);
   List<HiveFileSystem> get selectedFiles => _selectedFiles;
+  List<HiveFileSystem> get movingFiles => _movingFiles;
   bool isSelected(HiveFileSystem file) => _selectedFiles.contains(file);
+  bool isFileMoving(HiveFileSystem file) => _movingFiles.contains(file);
+  bool get isPendingMove => _oldMovePath != null;
 
   Future<void> _loadData() async {
     final files = await BackendService().getTeamFiles(team);
@@ -73,7 +79,8 @@ class FilesNotifier extends ChangeNotifier {
   }
 
   Future<void> newFolder(BuildContext context) async {
-    final name = await AddNewFolderDialog.show(context) ?? 'New Folder';
+    final name = await AddNewFolderDialog.show(context);
+    if (name == null) return;
     final files = cwdFiles;
     for (final file in files.children) {
       if (file.name == name) {
@@ -101,14 +108,18 @@ class FilesNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> deleteFile(BuildContext context) async {
-    final paths = <String>[];
-    final currentPath = path;
+  String _pathWithoutRoot({String? path}) {
+    final currentPath = path ?? this.path;
     final pathParts = currentPath.split('/');
     pathParts.remove('root');
+    return pathParts.isNotEmpty ? '${pathParts.join('/')}/' : '';
+  }
+
+  Future<bool> deleteFile() async {
+    final paths = <String>[];
+    final pathWithoutRoot = _pathWithoutRoot();
     for (final file in _selectedFiles) {
-      final path = pathParts.isNotEmpty ? '${pathParts.join('/')}/' : '';
-      paths.add('$path${file.name}');
+      paths.add('$pathWithoutRoot${file.name}');
     }
     final success = await BackendService().deleteTeamFile(team, paths);
     if (!success) return success;
@@ -121,7 +132,35 @@ class FilesNotifier extends ChangeNotifier {
     return true;
   }
 
-  Future<bool> moveFile(BuildContext context) async {
-    return true;
+  Future<void> markFilesAsMoving() async {
+    _movingFiles = [..._selectedFiles];
+    _oldMovePath = _pathWithoutRoot();
+    _oldMoveDirectory = cwdFiles;
+    _selectedFiles = [];
+    notifyListeners();
+  }
+
+  Future<void> moveFiles() async {
+    final oldPaths = <String>[];
+    for (final file in _movingFiles) {
+      oldPaths.add('$_oldMovePath${file.name}');
+    }
+    final newPaths = <String>[];
+    final pathWithoutRoot = _pathWithoutRoot();
+    for (final file in _movingFiles) {
+      newPaths.add('$pathWithoutRoot${file.name}');
+    }
+    // TODO x call the backend
+    for (final file in _movingFiles) {
+      _oldMoveDirectory!.children.remove(file);
+    }
+    for (final file in _movingFiles) {
+      cwdFiles.children.add(file);
+    }
+    _selectedFiles = [];
+    _movingFiles = [];
+    _oldMovePath = null;
+    _oldMoveDirectory = null;
+    notifyListeners();
   }
 }

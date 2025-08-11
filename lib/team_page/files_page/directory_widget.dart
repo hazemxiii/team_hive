@@ -14,11 +14,10 @@ class DirectoryWidget extends StatefulWidget {
 }
 
 class _DirectoryWidgetState extends State<DirectoryWidget> {
-  late final bool isFile;
+  bool isFile = false;
   @override
   void initState() {
     super.initState();
-    isFile = widget.directory is HiveFile;
   }
 
   void _onTap() {
@@ -52,16 +51,26 @@ class _DirectoryWidgetState extends State<DirectoryWidget> {
     }
   }
 
+  Color _getBackgroundColor() {
+    if (context.read<FilesNotifier>().isSelected(widget.directory)) {
+      return Style.sec.withValues(alpha: 0.1);
+    }
+    if (context.read<FilesNotifier>().isFileMoving(widget.directory)) {
+      return Style.section;
+    }
+    return Colors.transparent;
+  }
+
   @override
   Widget build(BuildContext context) {
+    isFile = widget.directory is HiveFile;
+
     return InkWell(
       onLongPress: () => _onLongPress(),
       onTap: () => _onTap(),
       child: Container(
         decoration: BoxDecoration(
-          color: context.watch<FilesNotifier>().isSelected(widget.directory)
-              ? Style.sec.withValues(alpha: 0.1)
-              : Colors.transparent,
+          color: _getBackgroundColor(),
         ),
         padding: const EdgeInsets.all(8.0),
         child: Row(
