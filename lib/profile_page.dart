@@ -3,7 +3,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/auth/login_page.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
@@ -16,11 +15,10 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  late final BackendService _backend;
+  final BackendService _backend = BackendService();
 
   @override
   void initState() {
-    _backend = context.read<BackendService>();
     super.initState();
   }
 
@@ -62,7 +60,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 IconButton(
                   color: Style.sec,
-                  onPressed: () => EditNameDialog.show(context, _backend, () {
+                  onPressed: () => EditNameDialog.show(context, () {
                     setState(() {});
                   }),
                   icon: const Icon(Icons.edit),
@@ -103,21 +101,17 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 class EditNameDialog extends StatefulWidget {
-  final BackendService backend;
   final Function onSave;
-  const EditNameDialog(
-      {super.key, required this.backend, required this.onSave});
+  const EditNameDialog({super.key, required this.onSave});
 
   @override
   State<EditNameDialog> createState() => _EditNameDialogState();
 
-  static void show(
-      BuildContext context, BackendService backend, Function onSave) {
+  static void show(BuildContext context, Function onSave) {
     showDialog(
         context: context,
         builder: (_) => EditNameDialog(
               onSave: onSave,
-              backend: backend,
             ));
   }
 }
@@ -131,8 +125,8 @@ class _EditNameDialogState extends State<EditNameDialog> {
 
   @override
   void initState() {
-    _fNameController = TextEditingController(text: widget.backend.user.fName);
-    _lNameController = TextEditingController(text: widget.backend.user.lName);
+    _fNameController = TextEditingController(text: BackendService().user.fName);
+    _lNameController = TextEditingController(text: BackendService().user.lName);
     super.initState();
   }
 
@@ -196,11 +190,11 @@ class _EditNameDialogState extends State<EditNameDialog> {
     }
     String fName = _fNameController.text.trim();
     String lName = _lNameController.text.trim();
-    bool success = await widget.backend.editDisplayName(fName, lName);
+    bool success = await BackendService().editDisplayName(fName, lName);
     if (mounted) {
       if (success) {
         Navigator.of(context).pop();
-        widget.backend.user.setName(fName, lName);
+        BackendService().user.setName(fName, lName);
         widget.onSave();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

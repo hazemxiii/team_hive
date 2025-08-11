@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/home_page.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/backend.dart';
@@ -26,9 +25,9 @@ class ConfirmTeamDeleteDialog extends StatelessWidget {
             child: const Text("Cancel")),
         TextButton(
             onPressed: () {
-              context.read<BackendService>().deleteTeam(team.id);
+              BackendService().deleteTeam(team.id);
               Navigator.of(context).pop();
-              context.read<BackendService>().user.teams.remove(team);
+              BackendService().user.teams.remove(team);
               Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const HomePage()),
                   (_) => false);

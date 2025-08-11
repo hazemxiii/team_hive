@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/loading_widget.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
@@ -16,13 +15,12 @@ class TeamsPage extends StatefulWidget {
 }
 
 class _TeamsPageState extends State<TeamsPage> {
-  late final BackendService _firebase;
+  final BackendService _firebase = BackendService();
   List<Team> teams = [];
   final _teamsLoadingNotifier = ValueNotifier(false);
 
   @override
   void initState() {
-    _firebase = context.read();
     super.initState();
   }
 

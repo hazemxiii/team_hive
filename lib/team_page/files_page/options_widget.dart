@@ -28,7 +28,7 @@ class OptionsWidget extends StatelessWidget {
             _homeBtn(context),
           ],
         ),
-        if (team.isOwner(context.read<BackendService>().user))
+        if (team.isOwner(BackendService().user))
           Row(
             children: [
               _newFolderBtn(context),

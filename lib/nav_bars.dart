@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/home_page.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
@@ -9,9 +8,8 @@ class NameWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BackendService firebase = context.read<BackendService>();
     return Text(
-      (firebase.user.fName)[0],
+      (BackendService().user.fName)[0],
       style: TextStyle(color: Style.back),
     );
   }

@@ -23,6 +23,12 @@ class BackendService {
   static MyUser? _currentUser;
   final appVersion = "1.0.1";
 
+  BackendService._();
+
+  static BackendService get instance => BackendService._();
+
+  factory BackendService() => instance;
+
   Future<RequestResponse> _makeRequest(String resource, Map data,
       {Uint8List? file, String? fileName}) async {
     try {

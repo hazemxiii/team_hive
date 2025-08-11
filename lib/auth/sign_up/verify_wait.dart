@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/home_page.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
@@ -22,10 +21,9 @@ class VerifyWaitPage extends StatefulWidget {
 
 class _VerifyWaitPageState extends State<VerifyWaitPage> {
   late Timer timer;
-  late final BackendService _backend;
+  late final BackendService _backend = BackendService();
   @override
   void initState() {
-    _backend = context.read<BackendService>();
     timer = Timer.periodic(const Duration(seconds: 1), (t) async {
       if (_backend.isVerified) {
         t.cancel();

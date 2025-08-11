@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
@@ -21,11 +20,10 @@ class _JoinCreateTeamDialogState extends State<JoinCreateTeamDialog> {
   final _createController = TextEditingController();
   final _joinFormKey = GlobalKey<FormState>();
   final _createFormKey = GlobalKey<FormState>();
-  late final BackendService _backend;
+  final BackendService _backend = BackendService();
 
   @override
   void initState() {
-    _backend = context.read<BackendService>();
     super.initState();
   }
 

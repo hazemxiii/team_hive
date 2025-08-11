@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/models/quiz.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
@@ -32,8 +31,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
               const SizedBox(
                 width: 15,
               ),
-              if (widget.team.owner.email ==
-                  context.read<BackendService>().user.email)
+              if (widget.team.owner.email == BackendService().user.email)
                 IconButton(
                     color: Style.sec,
                     onPressed: _addQuiz,
@@ -66,7 +64,7 @@ class _QuizzesPageState extends State<QuizzesPage> {
   void _goToQuiz(
       BuildContext context, Team team, Quiz quiz, bool withDetails) async {
     if (withDetails) {
-      BackendService firebase = context.read<BackendService>();
+      BackendService firebase = BackendService();
       bool isOwner = team.isOwner(firebase.user);
       if (isOwner || quiz.getQuizState() == 0 || quiz.getQuizState() == 1) {
         if (quiz.questions.isEmpty) {
@@ -102,7 +100,7 @@ class QuizWidget extends StatefulWidget {
 class _QuizWidgetState extends State<QuizWidget> {
   @override
   Widget build(BuildContext context) {
-    final backend = context.read<BackendService>();
+    final backend = BackendService();
     int status = widget.quiz.getQuizState();
     return InkWell(
       onTap: () => widget.goToQuiz(context, widget.team, widget.quiz, true),
@@ -243,7 +241,7 @@ class _QuizWidgetState extends State<QuizWidget> {
   }
 
   void _showResponses() async {
-    var backend = context.read<BackendService>();
+    var backend = BackendService();
 
     Quiz? q = await backend.getQuizData(widget.team.id, widget.quiz.name);
     if (q != null) {
@@ -263,7 +261,7 @@ class _QuizWidgetState extends State<QuizWidget> {
   }
 
   void _toggleShowAnswers() async {
-    bool success = await Provider.of<BackendService>(context, listen: false)
+    bool success = await BackendService()
         .toggleShowAnswers(widget.team.id, widget.quiz.name);
     if (mounted) {
       ScaffoldMessenger.of(

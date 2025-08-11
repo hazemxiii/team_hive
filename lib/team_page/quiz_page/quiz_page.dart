@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/models/question/mcq_question.dart';
 import 'package:team_hive/models/question/question.dart';
 import 'package:team_hive/models/question/written_question.dart';
@@ -23,12 +22,11 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   late final TextEditingController nameController;
-  late final BackendService _firebase;
+  final BackendService _firebase = BackendService();
 
   @override
   initState() {
     super.initState();
-    _firebase = context.read<BackendService>();
     nameController = TextEditingController(text: widget.quiz.name);
   }
 

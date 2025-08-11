@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/auth/login_page.dart';
 import 'package:team_hive/service/backend.dart';
 
@@ -10,7 +9,7 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
         onPressed: () async {
-          await context.read<BackendService>().signOut();
+          await BackendService().signOut();
           if (context.mounted) {
             Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginPage()),

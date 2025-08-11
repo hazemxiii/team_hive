@@ -1,6 +1,5 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/loading_widget.dart';
 import 'package:team_hive/models/file_system.dart';
 import 'package:team_hive/models/team.dart';
@@ -59,7 +58,7 @@ class FilesNotifier extends ChangeNotifier {
     if (subPath.startsWith('/')) subPath = subPath.substring(1);
     if (!context.mounted) return;
     LoadingWidget.show(context);
-    final success = await context.read<BackendService>().uploadTeamFile(
+    final success = await BackendService().uploadTeamFile(
         team: team,
         file: result.files.first.bytes!,
         fileName: result.files.first.name,
@@ -111,8 +110,7 @@ class FilesNotifier extends ChangeNotifier {
       final path = pathParts.isNotEmpty ? '${pathParts.join('/')}/' : '';
       paths.add('$path${file.name}');
     }
-    final success =
-        await context.read<BackendService>().deleteTeamFile(team, paths);
+    final success = await BackendService().deleteTeamFile(team, paths);
     if (!success) return success;
     final files = cwdFiles;
     for (final file in _selectedFiles) {
@@ -123,5 +121,7 @@ class FilesNotifier extends ChangeNotifier {
     return true;
   }
 
-  // TODO move
+  Future<bool> moveFile(BuildContext context) async {
+    return true;
+  }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/auth/login_page.dart';
 import 'package:team_hive/home_page.dart';
 
@@ -7,9 +6,6 @@ import 'package:team_hive/service/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:team_hive/service/backend.dart';
 import 'firebase_options.dart';
-/*
-https://www.figma.com/design/d4NRtX6iZtgDvjEW7tHr57/TeamHive?node-id=0-1&t=3OKBjxRjyCIDgUuK-1
-*/
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,14 +13,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MultiProvider(
-    providers: [
-      Provider(
-        create: (context) => BackendService(),
-      )
-    ],
-    child: const App(),
-  ));
+  runApp(
+    const App(),
+  );
 }
 
 class App extends StatelessWidget {
@@ -32,7 +23,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final firebase = context.read<BackendService>();
+    final firebase = BackendService();
     return MaterialApp(
       theme: ThemeData(
           colorSchemeSeed: Style.sec,

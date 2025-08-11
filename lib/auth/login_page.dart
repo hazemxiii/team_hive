@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:team_hive/auth/sign_up/sign_up_page.dart';
 import 'package:team_hive/home_page.dart';
 import 'package:team_hive/service/app_colors.dart';
@@ -141,8 +140,7 @@ class _GoogleSignInBtnState extends State<GoogleSignInBtn> {
     setState(() {
       _isLoading = true;
     });
-    final backend = context.read<BackendService>();
-    String? s = await backend.googleSignIn();
+    String? s = await BackendService().googleSignIn();
     setState(() {
       _isLoading = false;
     });
@@ -273,7 +271,7 @@ class _FormWidgetState extends State<FormWidget> {
     setState(() {
       _loginState = LoggingInState.loading;
     });
-    final f = context.read<BackendService>();
+    final f = BackendService();
     String? s =
         await f.emailSignIn(_emailController.text, _passController.text);
 
