@@ -160,5 +160,18 @@ class FilesNotifier extends ChangeNotifier {
     _oldMoveDirectory = null;
     notifyListeners();
   }
-  // TODO x rename
+
+  Future<String?> renameFile(HiveFileSystem file, String newName) async {
+    final files = cwdFiles;
+    for (final file in files.children) {
+      if (file.name == newName) {
+        return 'Folder with this name already exists';
+      }
+    }
+    file.name = newName;
+    _selectedFiles.clear();
+    // TODO z rename_backend
+    notifyListeners();
+    return null;
+  }
 }

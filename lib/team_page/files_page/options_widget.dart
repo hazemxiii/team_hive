@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:team_hive/models/file_system.dart';
 import 'package:team_hive/models/team.dart';
 import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/service/files_page/files_notifier.dart';
 import 'package:team_hive/team_page/files_page/confirm_delete_files_dialog.dart';
+import 'package:team_hive/team_page/files_page/rename_file.dart';
 
 class OptionsWidget extends StatelessWidget {
   final Team team;
@@ -19,6 +21,19 @@ class OptionsWidget extends StatelessWidget {
     if (!success) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Failed to delete file")));
+    }
+  }
+
+  void _renameFile(BuildContext context) async {
+    HiveFileSystem file = context.read<FilesNotifier>().selectedFiles.first;
+    final name = await RenameFileDialog.show(context, file.name);
+    if (name?.isEmpty ?? true) return;
+    if (!context.mounted) return;
+    final error = await context.read<FilesNotifier>().renameFile(file, name!);
+    if (!context.mounted) return;
+    if (error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
     }
   }
 
@@ -44,6 +59,8 @@ class OptionsWidget extends StatelessWidget {
               ],
               if (context.watch<FilesNotifier>().isPendingMove)
                 _moveFilesBtn(context),
+              if (context.watch<FilesNotifier>().selectedFiles.length == 1)
+                _renameBtn(context),
             ],
           ),
       ],
@@ -154,6 +171,19 @@ class OptionsWidget extends StatelessWidget {
           Icon(Icons.paste_outlined, color: Style.sec),
           const Text("Move Here",
               style: TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _renameBtn(BuildContext context) {
+    return MaterialButton(
+      onPressed: () => _renameFile(context),
+      child: Row(
+        spacing: 10,
+        children: [
+          Icon(Icons.edit_outlined, color: Style.sec),
+          const Text("Rename", style: TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );
