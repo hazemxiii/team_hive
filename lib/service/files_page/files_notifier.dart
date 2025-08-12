@@ -162,15 +162,21 @@ class FilesNotifier extends ChangeNotifier {
   }
 
   Future<String?> renameFile(HiveFileSystem file, String newName) async {
+    String oldName = file.name;
     final files = cwdFiles;
     for (final file in files.children) {
       if (file.name == newName) {
         return 'Folder with this name already exists';
       }
     }
+    final pathWithoutRoot = _pathWithoutRoot();
+    final oldPath = '$pathWithoutRoot$oldName';
+    final newPath = '$pathWithoutRoot$newName';
+    final success =
+        await BackendService().moveTeamFiles(team, {oldPath: newPath});
+    if (!success) return 'Failed to rename file';
     file.name = newName;
     _selectedFiles.clear();
-    // TODO z rename_backend
     notifyListeners();
     return null;
   }

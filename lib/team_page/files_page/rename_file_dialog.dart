@@ -39,7 +39,7 @@ class RenameFileDialog extends StatelessWidget {
           onPressed: () {
             Navigator.pop(context, "$name$ext");
           },
-          child: const Text("Add"),
+          child: const Text("Rename"),
         ),
       ],
     );

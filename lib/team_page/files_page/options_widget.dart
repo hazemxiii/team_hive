@@ -6,7 +6,7 @@ import 'package:team_hive/service/app_colors.dart';
 import 'package:team_hive/service/backend.dart';
 import 'package:team_hive/service/files_page/files_notifier.dart';
 import 'package:team_hive/team_page/files_page/confirm_delete_files_dialog.dart';
-import 'package:team_hive/team_page/files_page/rename_file.dart';
+import 'package:team_hive/team_page/files_page/rename_file_dialog.dart';
 
 class OptionsWidget extends StatelessWidget {
   final Team team;

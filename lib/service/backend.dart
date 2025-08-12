@@ -16,12 +16,11 @@ class RequestResponse {
 
 class BackendService {
   final _auth = FirebaseAuth.instance;
-  // TODO: backend link
-  // final _serverUrl = "team-hive-api-five.vercel.app";
-  final _serverUrl = "127.0.0.1:5000";
-  final bool _secure = false;
+  final _serverUrl = "team-hive-api-five.vercel.app";
+  // final _serverUrl = "127.0.0.1:5000";
+  final bool _secure = true;
   static MyUser? _currentUser;
-  final appVersion = "1.0.1";
+  final appVersion = "1.0.2";
 
   BackendService._();
 
